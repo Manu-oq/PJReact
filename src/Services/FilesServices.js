@@ -1,11 +1,11 @@
 import axios from "axios";
-import { addVersionToUrl } from "./AddVersionToURL"; // Importa la función
+import { addVersionToUrl } from "./AddVersionToURL"; 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getFiles = async (folder = 0) => {
   try {
-    const url = addVersionToUrl(`${API_BASE_URL}/files?folder=${folder}`); // Agrega el parámetro de versión
+    const url = addVersionToUrl(`${API_BASE_URL}/files?folder=${folder}`); 
     const response = await axios.get(url, {
       headers: {
         "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export const uploadFile = async (file, sala) => {
   formData.append("file", file);
   formData.append("sala", sala);
 
-  const url = addVersionToUrl(`${API_BASE_URL}/files/upload`); // Agrega el parámetro de versión
+  const url = addVersionToUrl(`${API_BASE_URL}/files/upload`); 
   const response = await axios.post(url, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -49,7 +49,7 @@ export const uploadFile = async (file, sala) => {
 };
 
 export const deleteFile = async (fileNameSatinize) => {
-  const url = addVersionToUrl(`${API_BASE_URL}/files/delete/${fileNameSatinize}`); // Agrega el parámetro de versión
+  const url = addVersionToUrl(`${API_BASE_URL}/files/delete/${fileNameSatinize}`); 
   const response = await axios.delete(url, {
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +67,7 @@ export const updateFile = async (file, sala) => {
   formData.append("file", file);
   formData.append("sala", sala);
 
-  const url = addVersionToUrl(`${API_BASE_URL}/files/update/${file.name}`); // Agrega el parámetro de versión
+  const url = addVersionToUrl(`${API_BASE_URL}/files/update/${file.name}`);
   const response = await axios.post(url, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -83,7 +83,7 @@ export const updateFile = async (file, sala) => {
 
 export const updateFileStatus = async (fileName, status) => {
   try {
-    const url = addVersionToUrl(`${API_BASE_URL}/files/update-status/${fileName}`); // Agrega el parámetro de versión
+    const url = addVersionToUrl(`${API_BASE_URL}/files/update-status/${fileName}`);
     const response = await axios.post(
       url,
       { status },
@@ -102,6 +102,7 @@ export const updateFileStatus = async (fileName, status) => {
 
     return response.data;
   } catch (error) {
-    throw error;
+    throw new Error("Error al actualizar el estado del archivo: " + error.message);
+  
   }
 };

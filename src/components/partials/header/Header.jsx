@@ -11,6 +11,7 @@ import ListItem from "@mui/material/ListItem";
 import Drawer from "@mui/material/Drawer";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import PropTypes from "prop-types"; 
 import "./header.css";
 
 export const Header = ({ navLinks }) => {
@@ -68,7 +69,7 @@ export const Header = ({ navLinks }) => {
           <ul className="nav-list">
             {navLinks.map((item) => (
               <li key={item.title} className="nav-item">
-                {item.external ? (
+                {item.isExternal || item.external ? (
                   <a
                     href={item.path}
                     target="_blank"
@@ -89,4 +90,16 @@ export const Header = ({ navLinks }) => {
       </Toolbar>
     </AppBar>
   );
+};
+
+
+Header.propTypes = {
+  navLinks: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      path: PropTypes.string.isRequired,
+      isExternal: PropTypes.bool,
+      external: PropTypes.bool,
+    })
+  ).isRequired,
 };

@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
-import { addVersionToUrl } from "../Services/AddVersionToURL"; // Importación corregida
+
 import axios from "axios";
 import { useUser } from "../components/context/UserContext";
 
@@ -18,35 +18,37 @@ const LoginForm = () => {
   const { login } = useUser();
   const [errorMessage, setErrorMessage] = useState("");
 
+
   const validateForm = (values) => {
     const errors = {};
-
-    if (!values.username) {
-      errors.username = "El nombre de usuario es requerido";
+    if (!values.name) {
+      errors.name = "El nombre de usuario es requerido";
     }
-
     if (!values.password) {
       errors.password = "La contraseña es requerida";
     }
-
     return errors;
   };
 
-  const handleSubmit = async (values, { setSubmitting }) => {
+  const handleSubmit = async (values, actions) => {
     try {
-      const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-      const dataToSend = { ...values, name: values.username };
-      const url = addVersionToUrl(`${BASE_URL}/login`); // Se aplica la función a la URL
+      const csrfUrl = "http://localhost:8000/sanctum/csrf-cookie"; 
+      
+      await axios.get(csrfUrl, { withCredentials: true });
 
-      const response = await axios.post(url, dataToSend, {
+      // 2. Realizar el login
+      const loginUrl = `${API_BASE_URL}/login`; 
+      
+      const response = await axios.post(loginUrl, values, {
+        withCredentials: true, 
         headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
-
+      
       if (response.data.token) {
         login(
           response.data.token,
@@ -55,9 +57,8 @@ const LoginForm = () => {
           response.data.user.permissions
         );
 
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.data.token}`;
+        // Configurar el token para futuras peticiones
+        axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
 
         navigate("/");
       }
@@ -65,14 +66,16 @@ const LoginForm = () => {
       console.error("Error al iniciar sesión:", error);
 
       if (error.response) {
-        setErrorMessage(
-          error.response.data.message || "Credenciales incorrectas"
-        );
+        if (error.response.status === 419) {
+             setErrorMessage("Error de seguridad (419). La página ha expirado, recárgala.");
+        } else {
+             setErrorMessage(error.response.data.message || "Credenciales incorrectas");
+        }
       } else {
         setErrorMessage("Error de conexión con el servidor");
       }
     } finally {
-      setSubmitting(false);
+      actions.setSubmitting(false);
     }
   };
 
@@ -89,11 +92,7 @@ const LoginForm = () => {
       <Paper
         elevation={6}
         sx={{
-          padding: {
-            xs: 2, // Pequeño
-            sm: 3, // Mediano
-            md: 4, // Grande
-          },
+          padding: { xs: 2, sm: 3, md: 4 },
           borderRadius: 2,
         }}
       >
@@ -104,11 +103,7 @@ const LoginForm = () => {
           sx={{
             fontWeight: "bold",
             color: "primary.main",
-            mb: {
-              xs: 2,
-              sm: 3,
-              md: 4,
-            },
+            mb: { xs: 2, sm: 3, md: 4 },
           }}
         >
           Iniciar Sesión
@@ -118,50 +113,31 @@ const LoginForm = () => {
           <Alert
             severity="error"
             onClose={() => setErrorMessage("")}
-            sx={{
-              mb: {
-                xs: 1,
-                sm: 2,
-                md: 3,
-              },
-            }}
+            sx={{ mb: { xs: 1, sm: 2, md: 3 } }}
           >
             {errorMessage}
           </Alert>
         )}
 
         <Formik
-          initialValues={{ username: "", password: "" }}
+          initialValues={{ name: "", password: "" }} // Esto está bien
           validate={validateForm}
           onSubmit={handleSubmit}
         >
           {({ isSubmitting, errors, touched }) => (
             <Form>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: {
-                    xs: 1,
-                    sm: 2,
-                    md: 3,
-                  },
-                }}
-              >
+              <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 1, sm: 2, md: 3 } }}>
+                
+                {/* CORRECCIÓN 2: El input debe tener name="name" para coincidir con initialValues y Backend */}
                 <Field
                   as={TextField}
-                  name="username"
-                  label="Nombre de usuario"
+                  name="name" 
+                  label="Nombre de usuario" 
                   variant="outlined"
                   fullWidth
-                  error={touched.username && Boolean(errors.username)}
-                  helperText={touched.username && errors.username}
-                  sx={{
-                    mb: {
-                      xs: 1,
-                      sm: 2,
-                    },
-                  }}
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
+                  sx={{ mb: { xs: 1, sm: 2 } }}
                 />
 
                 <Field
@@ -173,12 +149,7 @@ const LoginForm = () => {
                   fullWidth
                   error={touched.password && Boolean(errors.password)}
                   helperText={touched.password && errors.password}
-                  sx={{
-                    mb: {
-                      xs: 1,
-                      sm: 2,
-                    },
-                  }}
+                  sx={{ mb: { xs: 1, sm: 2 } }}
                 />
 
                 <Button
@@ -189,16 +160,8 @@ const LoginForm = () => {
                   fullWidth
                   size="large"
                   sx={{
-                    mt: {
-                      xs: 1,
-                      sm: 2,
-                      md: 3,
-                    },
-                    py: {
-                      xs: 1,
-                      sm: 1.5,
-                      md: 2,
-                    },
+                    mt: { xs: 1, sm: 2, md: 3 },
+                    py: { xs: 1, sm: 1.5, md: 2 },
                   }}
                 >
                   {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
@@ -213,4 +176,3 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
-P

@@ -4,8 +4,8 @@ import { UserProvider, useUser } from "./components/context/UserContext";
 import Home from "./pages/Home";
 import { Footer } from "./components/partials/footer/Footer";
 import "./app.css";
-import CourtRoomPage from "./pages/CourtRoomPage";
-import RoomPage from "./pages/RoomPage";
+// import CourtRoomPage from "./pages/CourtRoomPage";
+// import RoomPage from "./pages/RoomPage";
 import { FrequentQuestions } from "./pages/FrequentQuestions";
 import { lazy, Suspense } from "react";
 import Logout from "./components/Logout";
@@ -61,12 +61,11 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/sala-de-audiencias" element={<CourtRoomPage />} />
+            {/* <Route path="/sala-de-audiencias" element={<CourtRoomPage />} /> */}
             <Route path="/Apertura-juramentos" element={<Opening_of_files_and_oath_of_lawyers />} />
-            <Route path="/sala-de-audiencias/:id" element={<RoomPage />} />
+            {/* <Route path="/sala-de-audiencias/:id" element={<RoomPage />} /> */}
             <Route path="/preguntas-frecuentes" element={<FrequentQuestions />} />
             <Route path="/general-information" element={<GeneralInformation />} />
-            {/* Rutas de la Comisión de Libertad Condicional */}
             <Route
               path="/comision-libertad-condicional"
               element={

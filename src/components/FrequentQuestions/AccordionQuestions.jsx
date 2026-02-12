@@ -75,7 +75,7 @@ export const AccordionQuestions = () => {
       await deleteQuestion(id);
       setQuestions(questions.filter((q) => q.id !== id));
     } catch (error) {
-      
+       setErrorMessage("Error al eliminar la pregunta.");
     }
   };
 
@@ -122,7 +122,7 @@ export const AccordionQuestions = () => {
             >
               {item.question}
             </Typography>
-            {hasRoles("archivero") && (
+            {hasRoles("juez") && (
               <IconButton
                 onClick={() => handleDeleteQuestion(item.id)}
                 sx={{ marginLeft: "auto", color: "red" }}
@@ -144,7 +144,7 @@ export const AccordionQuestions = () => {
         </Accordion>
       ))}
 
-      {hasRoles("archivero") && (
+      {hasRoles("juez") && (
         <div style={{ display: "flex", justifyContent: "center", margin: "1em 0" }}>
           <IconButton onClick={() => setShowInputs(!showInputs)} color="primary">
             <AddCircleIcon fontSize="large" />
@@ -152,7 +152,7 @@ export const AccordionQuestions = () => {
         </div>
       )}
 
-      {hasRoles("archivero") && showInputs && (
+      {hasRoles("juez") && showInputs && (
         <div
           style={{
             display: "flex",

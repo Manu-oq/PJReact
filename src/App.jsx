@@ -12,8 +12,6 @@ import Logout from "./components/Logout";
 import { GeneralInformation } from "./pages/GeneralInformation";
 import Opening_of_files_and_oath_of_lawyers from "./pages/Opening_of_files_and_oath_of_lawyers";
 import PropTypes from "prop-types";
-
-
 import ComisionLibertadPage from "./pages/Comision/ComisionLibertadPage"; 
 import VotacionPage from "./pages/Comision/VotacionPage"; 
 
@@ -38,7 +36,8 @@ ProtectedRoute.propTypes = {
 const AppContent = () => {
   const { isAuthenticated } = useUser();
   const roles = JSON.parse(localStorage.getItem("roles")) || [];
-  const isJuez = roles.includes("juez");
+  const puedeVerModulo = roles.some(r => ['juez', 'archivero', 'ingeniero'].includes(r));
+  
 
   const navLinks = [
     { title: "Inicio", path: "/" },
@@ -49,7 +48,7 @@ const AppContent = () => {
       path: "https://www.pjud.cl/prensa-y-comunicaciones/noticias-del-poder-judicial",
       isExternal: true,
     },
-    ...(isJuez ? [{ title: "Comisión Libertad", path: "/comision-libertad-condicional" }] : []), 
+    ...(puedeVerModulo ?  [{ title: "Comisión Libertad", path: "/comision-libertad-condicional" }] : []), 
     ...(isAuthenticated ? [{ title: "Cerrar sesión", path: "/logout" }] : []),
   ];
 
@@ -69,7 +68,7 @@ const AppContent = () => {
             <Route
               path="/comision-libertad-condicional"
               element={
-                <ProtectedRoute allowedRoles={['juez','archivero']}> 
+                <ProtectedRoute allowedRoles={['juez', 'archivero', 'ingeniero']}> 
                   <ComisionLibertadPage />
                 </ProtectedRoute>
               }
@@ -77,7 +76,7 @@ const AppContent = () => {
             <Route
               path="/comision-libertad-condicional/unidad/:unidadId"
               element={
-                <ProtectedRoute allowedRoles={['juez','archivero']}> 
+                <ProtectedRoute allowedRoles={['juez', 'archivero', 'ingeniero']}> 
                   <VotacionPage />
                 </ProtectedRoute>
               }
@@ -85,7 +84,7 @@ const AppContent = () => {
             <Route
               path="/admin/votaciones/:unidadId"
               element={
-                <ProtectedRoute allowedRoles={['juez', 'archivero']}> 
+                <ProtectedRoute allowedRoles={['juez', 'archivero', 'ingeniero']}> 
                   <AdminVotacionPage />
                 </ProtectedRoute>
               }

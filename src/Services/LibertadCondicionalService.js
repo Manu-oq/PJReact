@@ -100,7 +100,6 @@ export const emitirVoto = async (votoData) => {
     throw error;
   }
 };
-
 export const exportarResultados = async () => {
   try {
     const url = addVersionToUrl(`/libertad-condicional/resultados/exportar`);
@@ -138,4 +137,16 @@ export const generarInformesZip = async (unidadId) => {
         responseType: 'blob' 
     });
     return response.data;
+};
+
+
+export const deletePostulantes = async (ids) => {
+  try {
+    const url = addVersionToUrl(`/libertad-condicional/postulantes/delete`);
+    const response = await apiClient.post(url, { ids });
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar postulantes:", error);
+    throw error;
+  }
 };

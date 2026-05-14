@@ -1,34 +1,14 @@
-
-.Facebook:hover{
-    filter: drop-shadow(0 0 10px #00f) ;
-    animation: Pulse 1s infinite ease-in-out;
-}
-.Twitter:hover{
-    filter: drop-shadow( 0 0  10px #0ff) ;
-    animation: Pulse 1s infinite ease-in-out;
-}
-.Instagram:hover{
-    filter: drop-shadow( 0 0 10px #f0f) ;
-    animation: Pulse 1s infinite ease-in-out;
+.container-icons {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.06);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.YouTube:hover{
-    filter: drop-shadow( 0 0 10px #f00) ;
-    animation: Pulse 1s infinite ease-in-out;
-}
-
-@keyframes Pulse{
-    0%,100%{
-        transform: scale(1);
-    }
-    25% {
-        transform: scale(1.05);
-    }
-    50%
-    {
-        transform: scale(1.1);
-    }
-    75%{
-        transform: scale(1.05);
-    }
+.container-icons:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
 }

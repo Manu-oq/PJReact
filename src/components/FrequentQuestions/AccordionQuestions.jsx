@@ -7,135 +7,96 @@ import {
   Button,
   IconButton,
   Alert,
+  Snackbar,
+  Box,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
-import { useEffect, useState } from "react";
-import {
-  getQuestions,
-  storeQuestion,
-  deleteQuestion,
-} from "../../Services/Questions";
+import { useUser } from "../context/UserContext";
+import { EmptyState, PageErrorState, PageLoader } from "../feedback/PageState";
+import { useQuestions } from "../../features/faq/hooks/useQuestions";
 
 export const AccordionQuestions = () => {
-  const [questions, setQuestions] = useState([]);
-  const [newQuestion, setNewQuestion] = useState({ question: "", answer: "" });
-  const [showInputs, setShowInputs] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); 
-  const roles = JSON.parse(localStorage.getItem('roles') || '[]');
+  const { isAuthenticated } = useUser();
+  const {
+    questions,
+    newQuestion,
+    showInputs,
+    loading,
+    pageError,
+    feedback,
+    setShowInputs,
+    loadQuestions,
+    closeFeedback,
+    updateNewQuestionField,
+    saveQuestion,
+    removeQuestion,
+  } = useQuestions();
 
-  const hasRoles = (role) => roles.includes(role);
+  if (loading) {
+    return <PageLoader message="Cargando preguntas frecuentes..." />;
+  }
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await getQuestions();
-
-        const data = response.data;
-        setQuestions(Array.isArray(data) ? data : []);
-      } catch (error) {
-        setQuestions([]);
-      }
-    };
-    fetchQuestions();
-  }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewQuestion({ ...newQuestion, [name]: value });
-  };
-
-  const handleAddQuestion = async () => {
-    if (!newQuestion.question || !newQuestion.answer) {
-      setErrorMessage("Por favor, completa ambos campos.");
-      return;
-    }
-    try {
-      const response = await storeQuestion(newQuestion);
-
-      const savedQuestion = response?.data;
-
-      if (savedQuestion && savedQuestion.id) {
-        setQuestions([...questions, savedQuestion]);
-        setErrorMessage(""); 
-      } else {
-        setErrorMessage("La respuesta del backend no tiene el formato esperado.");
-      }
-
-      setNewQuestion({ question: "", answer: "" });
-      setShowInputs(false);
-    } catch (error) {
-      setErrorMessage("Error al guardar la pregunta.");
-    }
-  };
-
-  const handleDeleteQuestion = async (id) => {
-    try {
-      await deleteQuestion(id);
-      setQuestions(questions.filter((q) => q.id !== id));
-    } catch (error) {
-       setErrorMessage("Error al eliminar la pregunta.");
-    }
-  };
+  if (pageError) {
+    return <PageErrorState message={pageError} onRetry={loadQuestions} />;
+  }
 
   return (
-    <div>
-      {errorMessage && (
-        <Alert
-          severity="error"
-          onClose={() => setErrorMessage("")}
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 9999,
-            margin: "10px",
-          }}
-        >
-          {errorMessage}
+    <Box>
+      <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+        <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
+          {feedback.message}
         </Alert>
-      )}
+      </Snackbar>
 
-      {questions.map((item, index) => (
+      {questions.length === 0 ? <EmptyState message="No hay preguntas frecuentes registradas por el momento." /> : null}
+
+      {questions.map((item) => (
         <Accordion
-          key={index}
+          key={item.id}
           sx={{
-            background: "#113F6A",
+            backgroundColor: "background.paper",
+            mb: 2,
           }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreIcon sx={{ color: "#fff" }} />}
-            aria-controls={`panel${index}-content`}
+            aria-controls={`panel-${item.id}-content`}
             sx={{
-              background: "#081f34",
-              padding: 1.5,
+              background: "linear-gradient(135deg, #081f34 0%, #113f6a 100%)",
+              px: { xs: 2, md: 2.5 },
+              py: 1,
             }}
           >
             <Typography
               sx={{
-                fontSize: { sm: "16px", md: "22px", lg: "24px" },
+                fontSize: { sm: "1rem", md: "1.2rem", lg: "1.3rem" },
                 color: "#fff",
                 fontWeight: "bold",
               }}
             >
               {item.question}
             </Typography>
-            {hasRoles("juez") && (
+            {isAuthenticated ? (
               <IconButton
-                onClick={() => handleDeleteQuestion(item.id)}
-                sx={{ marginLeft: "auto", color: "red" }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  removeQuestion(item.id);
+                }}
+                sx={{ marginLeft: "auto", color: "#ffb4ab" }}
+                aria-label={`Eliminar pregunta ${item.question}`}
               >
                 <DeleteIcon />
               </IconButton>
-            )}
+            ) : null}
           </AccordionSummary>
-          <AccordionDetails>
+          <AccordionDetails sx={{ px: { xs: 2, md: 2.5 }, py: 2.5, backgroundColor: "rgba(255,255,255,0.92)" }}>
             <Typography
               sx={{
-                fontSize: { sm: "14px", md: "16px", lg: "20px" },
-                color: "#eee",
+                fontSize: { sm: "0.95rem", md: "1rem", lg: "1.05rem" },
+                color: "text.secondary",
+                lineHeight: 1.8,
               }}
             >
               {item.answer}
@@ -144,50 +105,35 @@ export const AccordionQuestions = () => {
         </Accordion>
       ))}
 
-      {hasRoles("juez") && (
-        <div style={{ display: "flex", justifyContent: "center", margin: "1em 0" }}>
-          <IconButton onClick={() => setShowInputs(!showInputs)} color="primary">
+      {isAuthenticated ? (
+        <Box sx={{ display: "flex", justifyContent: "center", margin: "1.5em 0 1em" }}>
+          <IconButton onClick={() => setShowInputs((previous) => !previous)} color="primary" aria-label="Agregar pregunta frecuente">
             <AddCircleIcon fontSize="large" />
           </IconButton>
-        </div>
-      )}
+        </Box>
+      ) : null}
 
-      {hasRoles("juez") && showInputs && (
-        <div
-          style={{
+      {isAuthenticated && showInputs ? (
+        <Box
+          sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            marginTop: "1em",
+            marginTop: "1.5em",
+            gap: 2,
+            p: { xs: 2, md: 3 },
+            borderRadius: 4,
+            backgroundColor: "rgba(255,255,255,0.78)",
+            border: "1px solid rgba(8,31,52,0.08)",
           }}
         >
-          <TextField
-            label="Pregunta"
-            name="question"
-            value={newQuestion.question}
-            onChange={handleInputChange}
-            fullWidth
-            sx={{ marginBottom: "1em" }}
-          />
-          <TextField
-            label="Respuesta"
-            name="answer"
-            value={newQuestion.answer}
-            onChange={handleInputChange}
-            fullWidth
-            multiline
-            rows={3}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddQuestion}
-            sx={{ marginTop: "1em" }}
-          >
+          <TextField label="Pregunta" name="question" value={newQuestion.question} onChange={updateNewQuestionField} fullWidth />
+          <TextField label="Respuesta" name="answer" value={newQuestion.answer} onChange={updateNewQuestionField} fullWidth multiline rows={3} />
+          <Button variant="contained" color="primary" onClick={saveQuestion}>
             Guardar
           </Button>
-        </div>
-      )}
-    </div>
+        </Box>
+      ) : null}
+    </Box>
   );
 };

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import {
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
@@ -17,25 +18,20 @@ const iconMap = {
 export const Icons = ({ title, url }) => {
   const IconComponent = iconMap[title];
 
-  return (
-    <>
-      {IconComponent && (
-        <IconButton
-          component="a"
-          href={url}
-          target="_blank"
-          color="inherit"
-          className="container-icons"
-        >
-          <IconComponent
-            className={`${title}`}
-            sx={{
-              fontSize: 35,
-              color: "white",
-            }}
-          />
-        </IconButton>
-      )}
-    </>
-  );
+  return IconComponent ? (
+    <IconButton component="a" href={url} target="_blank" rel="noopener noreferrer" color="inherit" className="container-icons">
+      <IconComponent
+        className={title}
+        sx={{
+          fontSize: 24,
+          color: "white",
+        }}
+      />
+    </IconButton>
+  ) : null;
+};
+
+Icons.propTypes = {
+  title: PropTypes.string.isRequired,
+  url: PropTypes.string.isRequired,
 };

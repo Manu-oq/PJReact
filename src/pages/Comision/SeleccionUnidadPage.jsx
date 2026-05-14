@@ -18,7 +18,7 @@ const SeleccionUnidadPage = () => {
       try {
         const data = await getUnidades();
         setUnidades(data);
-      } catch (error) {
+      } catch {
         setErrorMsg("Error al cargar unidades penales.");
       } finally {
         setLoading(false);

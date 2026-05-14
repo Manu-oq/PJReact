@@ -9,5 +9,11 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       assetsDir: "assets",
     },
+    test: {
+      environment: "jsdom",
+      setupFiles: "./src/test/setupTests.js",
+      globals: true,
+      css: true,
+    },
   };
 });

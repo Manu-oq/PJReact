@@ -1,40 +1,73 @@
-// UserContext.js
-import { createContext, useContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { clearStoredSession, getStoredSession, migrateLegacySession, persistSession } from "../../utils/authStorage";
 
-const UserContext = createContext();
+const UserContext = createContext(null);
 
-export const useUser = () => useContext(UserContext);
+const getInitialSession = () => {
+  const stored = getStoredSession();
+
+  if (stored.token || stored.name || stored.email || stored.roles.length || stored.permissions.length) {
+    return stored;
+  }
+
+  return migrateLegacySession();
+};
 
 export const UserProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
-  const [userName, setUserName] = useState(localStorage.getItem("name") || "");
+  const [session, setSession] = useState(getInitialSession);
 
-  const login = (token, name, roles, permissions) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("name", name);
-    localStorage.setItem("roles", JSON.stringify(roles));
-    localStorage.setItem("permissions", JSON.stringify(permissions));
-    setIsAuthenticated(true);
-    setUserName(name);
-  };
+  const login = useCallback((token, user) => {
+    const nextSession = {
+      token: token || null,
+      name: user?.name || "",
+      email: user?.email || "",
+      roles: Array.isArray(user?.roles) ? user.roles : [],
+      permissions: Array.isArray(user?.permissions) ? user.permissions : [],
+    };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("name");
-    localStorage.removeItem("roles");
-    localStorage.removeItem("permissions");
-    setIsAuthenticated(false);
-    setUserName("");
-  };
-
-  useEffect(() => {
-    setIsAuthenticated(!!localStorage.getItem("token"));
-    setUserName(localStorage.getItem("name") || "");
+    persistSession(nextSession);
+    setSession(nextSession);
   }, []);
 
-  return (
-    <UserContext.Provider value={{ isAuthenticated, userName, login, logout }}>
-      {children}
-    </UserContext.Provider>
-  );
+  const logout = useCallback(() => {
+    clearStoredSession();
+    setSession({ token: null, name: "", email: "", roles: [], permissions: [] });
+  }, []);
+
+  const value = useMemo(() => {
+    const roles = session.roles || [];
+    const permissions = session.permissions || [];
+
+    return {
+      isAuthenticated: Boolean(session.token),
+      userName: session.name || "",
+      userEmail: session.email || "",
+      roles,
+      permissions,
+      token: session.token,
+      login,
+      logout,
+      hasRole: (role) => roles.includes(role),
+      hasAnyRole: (allowedRoles = []) => allowedRoles.some((role) => roles.includes(role)),
+      hasPermission: (permission) => permissions.includes(permission),
+      hasAnyPermission: (allowedPermissions = []) => allowedPermissions.some((permission) => permissions.includes(permission)),
+    };
+  }, [login, logout, session]);
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+};
+
+UserProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export const useUser = () => {
+  const context = useContext(UserContext);
+
+  if (!context) {
+    throw new Error("useUser debe usarse dentro de UserProvider");
+  }
+
+  return context;
 };

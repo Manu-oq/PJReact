@@ -1,124 +1,88 @@
 import pjud from "../../../img/pjud_blanco.png";
-import { Box, Typography, Link, AppBar } from "@mui/material";
+import { Box, Container, Divider, Link, Stack, Typography } from "@mui/material";
 import { Icons, Reference } from "./subcomponents";
 import Grid from "@mui/material/Grid2";
 import "./footer.css";
 
 export const Footer = () => {
   return (
-    <AppBar
+    <Box
       component="footer"
-      position="sticky"
       className="footer"
       sx={{
-        padding: { xs: "1rem 1.5rem", sm: "2rem" },
+        mt: 4,
+        color: "#eef4fb",
+        background: "linear-gradient(180deg, #081f34 0%, #0c2944 100%)",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <Grid
-        container
-        spacing={0}
-        columns={4}
-        sx={{
-          justifyContent: {sm: "space-around", md: "space-between"},
-          
-          
-        }}
-      >
-        <Box sx={{ width: { xs: "12em", sm: "15em", md: "20em" } }}>
-          <Link href="https://www.pjud.cl/" target="_blank" rel="noopener">
-            <img
-              src={pjud}
-              alt="Pjud Logo"
-              id="id-img-Logo-Pjud"
-              className="logo-pjud"
-              sx={{ width: "100%" }}
-            />
-          </Link>
-        </Box>
+      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 5 } }}>
+        <Grid container spacing={{ xs: 3, md: 4 }} alignItems="flex-start">
+          <Grid xs={12} md={4}>
+            <Stack spacing={2.5}>
+              <Link href="https://www.pjud.cl/" target="_blank" rel="noopener" sx={{ display: "inline-flex", width: "fit-content" }}>
+                <img
+                  src={pjud}
+                  alt="Poder Judicial"
+                  id="id-img-Logo-Pjud"
+                  className="logo-pjud"
+                />
+              </Link>
+              <Box>
+                <Typography variant="overline" className="footer-kicker">
+                  Corte de Apelaciones de Temuco
+                </Typography>
+                <Typography variant="body1" className="footer-copy">
+                  Plataforma institucional orientada a información pública, gestión interna y soporte a procesos de libertad condicional.
+                </Typography>
+              </Box>
+              <Stack direction="row" spacing={1}>
+                <Icons title="Facebook" url="https://www.facebook.com/PoderJudicialdeChile" />
+                <Icons title="Twitter" url="https://twitter.com/pjudicialchile" />
+                <Icons title="Instagram" url="https://www.instagram.com/pjudicialchile/" />
+                <Icons title="YouTube" url="https://www.youtube.com/user/pjudicialchile" />
+              </Stack>
+            </Stack>
+          </Grid>
 
-        <Box>
-          <Icons
-            title={"Facebook"}
-            url={"https://www.facebook.com/PoderJudicialdeChile"}
-          />
+          <Grid xs={12} sm={6} md={4}>
+            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2 }}>
+              Enlaces de interés
+            </Typography>
 
-          <Icons title={"Twitter"} url={"https://twitter.com/pjudicialchile"} />
+            <ul className="list-footer">
+              <li><Reference text="Chile Atiende" direction="https://www.chileatiende.gob.cl/" /></li>
+              <li><Reference text="Portal de Transparencia del Estado" direction="http://www.portaltransparencia.cl/PortalPdT/" /></li>
+              <li><Reference text="Oficina Judicial Virtual" direction="https://ojv.pjud.cl/kpitec-ojv-web/views/login.html" /></li>
+              <li><Reference text="Trámite Fácil" direction="https://ojv.pjud.cl/kpitec-ojv-web/tramite_facil" /></li>
+              <li><Reference text="Trabaja con nosotros" direction="https://postulaciones.pjud.cl/postulacionessrh/servlet/com.postulaciones.login" /></li>
+            </ul>
+          </Grid>
 
-          <Icons
-            title={"Instagram"}
-            url={"https://www.instagram.com/pjudicialchile/"}
-          />
+          <Grid xs={12} sm={6} md={4}>
+            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2 }}>
+              Contacto
+            </Typography>
 
-          <Icons
-            title={"YouTube"}
-            url={"https://www.youtube.com/user/pjudicialchile"}
-          />
-        </Box>
+            <ul className="list-footer">
+              <li>
+                <Typography className="footer-label">Teléfono</Typography>
+                <Typography>(45) 2685200</Typography>
+              </li>
+              <li>
+                <Typography className="footer-label">Correo institucional</Typography>
+                <Reference text="ca_temuco@pjud.cl" direction="mailto:ca_temuco@pjud.cl" />
+              </li>
+            </ul>
+          </Grid>
+        </Grid>
 
-        <Box>
-          <Typography
-            variant="h6"
-            className="titles"
-            sx={{ fontWeight: "bold" }}
-          >
-            Enlaces de interés
-          </Typography>
+        <Divider sx={{ my: 3, borderColor: "rgba(255,255,255,0.08)" }} />
 
-          <ul className="list-footer">
-            <li>
-              <Reference
-                text="Chile atiende"
-                direction="https://www.chileatiende.gob.cl/"
-              />
-            </li>
-            <li>
-              <Reference
-                text="Portal de transparencia del estado"
-                direction="http://www.portaltransparencia.cl/PortalPdT/"
-              />
-            </li>
-            <li>
-              <Reference
-                text="Oficina Judicial Virtual"
-                direction="https://ojv.pjud.cl/kpitec-ojv-web/views/login.html"
-              />
-            </li>
-            <li>
-              <Reference
-                text="Trámite Fácil"
-                direction="https://ojv.pjud.cl/kpitec-ojv-web/tramite_facil"
-              />
-            </li>
-            <li>
-              <Reference
-                text="Trabaja con nosotros"
-                direction="https://postulaciones.pjud.cl/postulacionessrh/servlet/com.postulaciones.login"
-              />
-            </li>
-          </ul>
-        </Box>
-
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Typography
-            variant="h6"
-            className="titles"
-            sx={{ fontWeight: "bold" }}
-          >
-            Contacto
-          </Typography>
-          <ul className="list-footer">
-            <li>
-              <Typography>Teléfono: (45) 2685200</Typography>
-            </li>
-            <li>
-              <Reference
-                text="Email: ca_temuco@pjud.cl"
-                direction="mailto:ca_temuco@pjud.cl"
-              />
-            </li>
-          </ul>
-        </Box>
-      </Grid>
-    </AppBar>
+        <Typography variant="body2" sx={{ color: "rgba(238,244,251,0.72)", textAlign: { xs: "center", md: "left" } }}>
+          © Poder Judicial de Chile — Corte de Apelaciones de Temuco.
+        </Typography>
+      </Container>
+    </Box>
   );
 };

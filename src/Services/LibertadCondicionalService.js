@@ -1,152 +1,141 @@
-import axios from "axios";
+import { apiClient } from "../lib/apiClient";
 import { addVersionToUrl } from "./AddVersionToURL";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-  },
-});
-
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn("Sesión expirada o no válida.");
-    }
-    return Promise.reject(error);
-  }
-);
-
 export const getUnidades = async () => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/unidades`);
-    const response = await apiClient.get(url);
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener unidades:", error);
-    throw error;
-  }
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/unidades"));
+  return response.data;
 };
 
-
 export const getPostulantes = async (unidadId = null) => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/postulantes`);
-    const response = await apiClient.get(url, {
-        params: { unidad_id: unidadId } 
-    }); 
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener postulantes:", error);
-    throw error;
-  }
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/postulantes"), {
+    params: { unidad_id: unidadId },
+  });
+  return response.data;
 };
 
 export const getFundamentos = async () => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/fundamentos`);
-    const response = await apiClient.get(url);
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener fundamentos:", error);
-    throw error;
-  }
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/fundamentos"));
+  return response.data;
 };
 
-export const uploadPostulantesExcel = async (file, unidadId) => { 
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/postulantes/importar`);
-    const formData = new FormData();
-    formData.append('file', file); 
-    formData.append('unidad_id', unidadId); 
+export const uploadPostulantesExcel = async (file, unidadId) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("unidad_id", unidadId);
 
-    const response = await apiClient.post(url, formData, {
+  const response = await apiClient.post(
+    addVersionToUrl("/libertad-condicional/postulantes/importar"),
+    formData,
+    {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error al subir archivo:", error);
-    throw error;
-  }
+    }
+  );
+
+  return response.data;
 };
 
 export const emitirVoto = async (votoData) => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/votar`);
-    const response = await apiClient.post(url, votoData);
-    return response.data;
-  } catch (error) {
-    console.error("Error al emitir voto:", error);
-    throw error;
-  }
+  const response = await apiClient.post(addVersionToUrl("/libertad-condicional/votar"), votoData);
+  return response.data;
 };
+
 export const exportarResultados = async () => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/resultados/exportar`);
-    const response = await apiClient.get(url, {
-      responseType: 'blob',
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error al exportar resultados:", error);
-    throw error;
-  }
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/resultados/exportar"), {
+    responseType: "blob",
+  });
+  return response.data;
 };
 
 export const getResumenAdmin = async () => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/admin/resumen`);
-    const response = await apiClient.get(url);
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener resumen admin:", error);
-    throw error;
-  }
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/admin/resumen"));
+  return response.data;
 };
 
 export const checkEstadoUnidad = async (unidadId) => {
-    const url = addVersionToUrl(`/libertad-condicional/unidad/estado`);
-    const response = await apiClient.get(url, { params: { unidad_id: unidadId } });
-    return response.data.completa; 
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/unidad/estado"), {
+    params: { unidad_id: unidadId },
+  });
+  return response.data.completa;
 };
 
-export const generarInformesZip = async (unidadId) => {
-    const url = addVersionToUrl(`/libertad-condicional/informes/generar`);
-    const response = await apiClient.get(url, { 
-        params: { unidad_id: unidadId },
-        responseType: 'blob' 
-    });
-    return response.data;
+export const prepararGeneracionInformes = async (unidadId) => {
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/informes/preparar"), {
+    params: { unidad_id: unidadId },
+  });
+  return response.data;
 };
 
+export const procesarLoteInformes = async (unidadId, ids) => {
+  const response = await apiClient.post(
+    addVersionToUrl("/libertad-condicional/informes/procesar-lote"),
+    { unidad_id: unidadId, ids },
+    { timeout: 120000 }
+  );
+  return response.data;
+};
+
+export const descargarZipInformes = async (unidadId) => {
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/informes/descargar"), {
+    params: { unidad_id: unidadId },
+    responseType: "blob",
+    timeout: 30000,
+  });
+  return response.data;
+};
 
 export const deletePostulantes = async (ids) => {
-  try {
-    const url = addVersionToUrl(`/libertad-condicional/postulantes/delete`);
-    const response = await apiClient.post(url, { ids });
-    return response.data;
-  } catch (error) {
-    console.error("Error al eliminar postulantes:", error);
-    throw error;
-  }
+  const response = await apiClient.post(addVersionToUrl("/libertad-condicional/postulantes/delete"), { ids });
+  return response.data;
+};
+
+export const cerrarCicloHistorico = async ({ unidad_id, anio, semestre }) => {
+  const response = await apiClient.post(addVersionToUrl("/libertad-condicional/historico/cerrar-ciclo"), {
+    unidad_id,
+    anio,
+    semestre,
+  });
+
+  return response.data;
+};
+
+export const getCiclosHistoricos = async (unidadId) => {
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/historico/ciclos"), {
+    params: { unidad_id: unidadId },
+  });
+
+  return response.data;
+};
+
+export const getPostulantesHistoricos = async (cicloId) => {
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/historico/postulantes"), {
+    params: { ciclo_id: cicloId },
+  });
+
+  return response.data;
+};
+
+export const prepararInformesHistoricos = async (cicloId, ids = null) => {
+  const payload = Array.isArray(ids) && ids.length > 0 ? { ciclo_id: cicloId, ids } : { ciclo_id: cicloId };
+  const response = await apiClient.post(addVersionToUrl("/libertad-condicional/historico/informes/preparar"), payload);
+  return response.data;
+};
+
+export const procesarLoteInformesHistoricos = async (cicloId, ids) => {
+  const response = await apiClient.post(
+    addVersionToUrl("/libertad-condicional/historico/informes/procesar-lote"),
+    { ciclo_id: cicloId, ids },
+    { timeout: 120000 }
+  );
+  return response.data;
+};
+
+export const descargarZipInformesHistoricos = async (cicloId) => {
+  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/historico/informes/descargar"), {
+    params: { ciclo_id: cicloId },
+    responseType: "blob",
+    timeout: 30000,
+  });
+  return response.data;
 };

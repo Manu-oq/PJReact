@@ -58,11 +58,6 @@ export const Header = ({ navLinks }) => {
           <Link to="/" aria-label="Inicio" className="navbar-brand">
             <img id="header-logo" src={pjud} alt="Poder Judicial" className="logo-img" />
           </Link>
-          <Box className="brand-copy">
-            <Typography variant="body2" className="brand-kicker">
-              Corte de Apelaciones de Temuco
-            </Typography>
-          </Box>
         </Box>
 
         <Stack direction="row" spacing={1.25} alignItems="center" className="desktop-actions">

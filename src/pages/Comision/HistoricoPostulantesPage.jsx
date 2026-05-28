@@ -38,6 +38,27 @@ import {
 } from "../../features/comision/utils/comisionSelectors.jsx";
 import { COMISION_REPORT_CHUNK_SIZE, MAYORIA_NECESARIA_COMISION, TOTAL_JUECES_COMISION } from "../../features/comision/utils/constants";
 
+const formatJuezVotacion = (juez) => {
+  if (!juez) return null;
+
+  if (typeof juez === "string") {
+    return juez;
+  }
+
+  const nombre = juez.nombre || juez.name || juez.juez;
+  if (!nombre) return null;
+
+  if (juez.voto === "si") {
+    return `${nombre} (CONCEDE)`;
+  }
+
+  if (juez.voto === "no") {
+    return `${nombre} (DENIEGA)`;
+  }
+
+  return nombre;
+};
+
 const HistoricoPostulantesPage = () => {
   const { unidadId, cicloId } = useParams();
   const navigate = useNavigate();
@@ -276,7 +297,7 @@ const HistoricoPostulantesPage = () => {
                   </TableCell>
                   <TableCell>
                     {Array.isArray(postulante.jueces_votaron) && postulante.jueces_votaron.length > 0
-                      ? postulante.jueces_votaron.join(", ")
+                      ? postulante.jueces_votaron.map(formatJuezVotacion).filter(Boolean).join(", ")
                       : "Sin jueces registrados"}
                   </TableCell>
                 </TableRow>

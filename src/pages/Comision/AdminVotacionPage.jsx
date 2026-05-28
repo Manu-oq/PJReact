@@ -59,6 +59,39 @@ import { useComisionAccess } from "../../features/comision/hooks/useComisionAcce
 
 const currentYear = new Date().getFullYear();
 
+const normalizeJuezVotacion = (juez) => {
+  if (typeof juez === "string") {
+    return {
+      nombre: juez,
+      voto: null,
+    };
+  }
+
+  if (!juez || typeof juez !== "object") {
+    return {
+      nombre: "Juez sin identificar",
+      voto: null,
+    };
+  }
+
+  return {
+    nombre: juez.nombre || juez.name || juez.juez || "Juez sin identificar",
+    voto: juez.voto || juez.vote || juez.decision || null,
+  };
+};
+
+const getVoteDisplay = (voto) => {
+  if (voto === "si") {
+    return { label: "CONCEDE", color: "#2e7d32" };
+  }
+
+  if (voto === "no") {
+    return { label: "DENIEGA", color: "#c62828" };
+  }
+
+  return { label: "Voto registrado", color: "#587086" };
+};
+
 const AdminVotacionPage = () => {
   const { unidadId } = useParams();
   const navigate = useNavigate();
@@ -370,16 +403,21 @@ const AdminVotacionPage = () => {
                 <Box sx={{ mt: { xs: 4, md: 10 } }}>
                   <Typography variant="h6" gutterBottom sx={{ borderBottom: "1px solid #ddd", pb: 1 }}>Detalle de Jueces:</Typography>
                   <ul style={{ paddingLeft: "20px", marginTop: "15px", listStyleType: "none" }}>
-                    {selectedItem.jueces_votaron.map((juezObj, index) => (
-                      <li key={`${juezObj.nombre}-${index}`} style={{ marginBottom: "12px" }}>
+                    {(selectedItem.jueces_votaron || []).map((juezObj, index) => {
+                      const juezNormalizado = normalizeJuezVotacion(juezObj);
+                      const voteDisplay = getVoteDisplay(juezNormalizado.voto);
+
+                      return (
+                      <li key={`${juezNormalizado.nombre}-${index}`} style={{ marginBottom: "12px" }}>
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {juezObj.nombre} :
-                          <span style={{ marginLeft: "8px", fontWeight: "bold", color: juezObj.voto === "si" ? "#2e7d32" : "#c62828" }}>
-                            {juezObj.voto === "si" ? "CONCEDO" : "DENIEGA"}
+                          {juezNormalizado.nombre} :
+                          <span style={{ marginLeft: "8px", fontWeight: "bold", color: voteDisplay.color }}>
+                            {voteDisplay.label}
                           </span>
                         </Typography>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 </Box>
               </Grid>

@@ -8,8 +8,8 @@ import Typography from "@mui/material/Typography";
 import Alert from "@mui/material/Alert";
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
-import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { getCsrfCookie, loginAPI } from "../Services/AuthService";
 import { useUser } from "../components/context/UserContext";
 import { getApiErrorMessage } from "../lib/apiClient";
@@ -84,34 +84,34 @@ const LoginForm = () => {
               p: { xs: 3, md: 5 },
               background: "linear-gradient(180deg, rgba(8,31,52,0.98) 0%, rgba(17,63,106,0.96) 100%)",
               color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: { xs: 180, md: "100%" },
             }}
           >
-            <Chip label="Acceso institucional" sx={{ mb: 2, color: "#fff", backgroundColor: "rgba(255,255,255,0.12)" }} />
-            <Typography variant="h3" sx={{ mb: 2, color: "#fff" }}>
-              Ingreso a la plataforma
-            </Typography>
-            <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.82)", lineHeight: 1.85, mb: 3 }}>
-              Acceda con sus credenciales institucionales para utilizar los módulos privados de gestión y administración.
-            </Typography>
-
-            <Stack spacing={1.5}>
-              <Paper sx={{ p: 2.25, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}>
-                <Typography variant="subtitle2" sx={{ color: "rgba(255,255,255,0.68)", mb: 0.5 }}>
-                  Seguridad
-                </Typography>
-                <Typography variant="body2">
-                  La sesión está protegida mediante autenticación institucional y control de permisos por módulo.
-                </Typography>
-              </Paper>
-              <Paper sx={{ p: 2.25, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.08)", color: "#fff" }}>
-                <Typography variant="subtitle2" sx={{ color: "rgba(255,255,255,0.68)", mb: 0.5 }}>
-                  Soporte
-                </Typography>
-                <Typography variant="body2">
-                  Si tiene inconvenientes con su acceso, contacte al equipo responsable o a la administración institucional.
-                </Typography>
-              </Paper>
-            </Stack>
+            <Box sx={{ textAlign: "center" }}>
+              <Box
+                sx={{
+                  width: 88,
+                  height: 88,
+                  mx: "auto",
+                  mb: 2,
+                  borderRadius: "999px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                }}
+              >
+                <LockOutlinedIcon sx={{ fontSize: 38, color: "#fff" }} />
+              </Box>
+              <Chip label="Acceso institucional" sx={{ mb: 2, color: "#fff", backgroundColor: "rgba(255,255,255,0.12)" }} />
+              <Typography variant="h4" sx={{ color: "#fff" }}>
+                Ingreso a la plataforma
+              </Typography>
+            </Box>
           </Box>
 
           <Box sx={{ p: { xs: 3, md: 5 } }}>

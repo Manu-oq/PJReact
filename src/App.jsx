@@ -7,6 +7,12 @@ import "./app.css";
 import Logout from "./components/Logout";
 import { PageLoader } from "./components/feedback/PageState";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
+import { useCertificacionesAccess } from "./features/certificaciones/hooks/useCertificacionesAccess";
+import {
+  CERTIFICACIONES_NAV_LINK,
+  CERTIFICACIONES_PERMISSION,
+  CERTIFICACIONES_ROUTE,
+} from "./features/certificaciones/utils/constants";
 import { useComisionAccess } from "./features/comision/hooks/useComisionAccess";
 import { COMISION_ALLOWED_ROLES, COMISION_HISTORY_PERMISSION } from "./features/comision/utils/constants";
 
@@ -20,9 +26,11 @@ const VotacionPage = lazy(() => import("./pages/Comision/VotacionPage"));
 const AdminVotacionPage = lazy(() => import("./pages/Comision/AdminVotacionPage"));
 const HistoricoCiclosPage = lazy(() => import("./pages/Comision/HistoricoCiclosPage"));
 const HistoricoPostulantesPage = lazy(() => import("./pages/Comision/HistoricoPostulantesPage"));
+const CertificacionesPage = lazy(() => import("./pages/CertificacionesPage"));
 
 const AppContent = () => {
   const { puedeVerModulo } = useComisionAccess();
+  const { puedeVerModulo: puedeVerCertificaciones } = useCertificacionesAccess();
   const navLinks = useMemo(
     () => [
       { title: "Inicio", path: "/" },
@@ -33,10 +41,11 @@ const AppContent = () => {
         path: "https://www.pjud.cl/prensa-y-comunicaciones/noticias-del-poder-judicial",
         isExternal: true,
       },
+      ...(puedeVerCertificaciones ? [CERTIFICACIONES_NAV_LINK] : []),
       ...(puedeVerModulo ? [{ title: "Comisión Libertad", path: "/comision-libertad-condicional" }] : []),
       { title: "Cerrar sesión", path: "/logout", requiresAuth: true },
     ],
-    [puedeVerModulo]
+    [puedeVerCertificaciones, puedeVerModulo]
   );
 
   return (
@@ -50,6 +59,14 @@ const AppContent = () => {
             <Route path="/Apertura-juramentos" element={<OpeningOfFilesAndOathOfLawyers />} />
             <Route path="/preguntas-frecuentes" element={<FrequentQuestions />} />
             <Route path="/general-information" element={<GeneralInformation />} />
+            <Route
+              path={CERTIFICACIONES_ROUTE}
+              element={
+                <ProtectedRoute allowedPermissions={[CERTIFICACIONES_PERMISSION]}>
+                  <CertificacionesPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/comision-libertad-condicional"
               element={

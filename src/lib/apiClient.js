@@ -16,6 +16,7 @@ apiClient.interceptors.request.use(
   (config) => {
     const { token } = getStoredSession();
 
+    // Fallback transitorio mientras la autenticacion no migre completamente a cookie HttpOnly/BFF.
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

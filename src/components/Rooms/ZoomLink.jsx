@@ -7,8 +7,9 @@ import Typography from "@mui/material/Typography";
 import Avatar from "@mui/material/Avatar";
 import { useTheme } from "@mui/material/styles";
 import zoomIcon from "../../img/zoomIcon.svg";
-import { getZoomLink, updateZoomLink } from "../../Services/ZoomServices";
+import { getZoomLink, isZoomLinkIntegrationEnabled, updateZoomLink } from "../../Services/ZoomServices";
 import DialogZoom from "./DialogZoom";
+import { useUser } from "../context/UserContext";
 
 export default function ZoomLink({ salaId }) {
   const [zoomLink, setZoomLink] = useState("");
@@ -16,13 +17,18 @@ export default function ZoomLink({ salaId }) {
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-
-  const roles = JSON.parse(localStorage.getItem("roles") || "[]");
-  const hasRoles = (role) => roles.includes(role);
+  const { hasRole } = useUser();
 
   const theme = useTheme();
+  const zoomIntegrationEnabled = isZoomLinkIntegrationEnabled;
 
   useEffect(() => {
+    if (!zoomIntegrationEnabled) {
+      setHasFetched(true);
+      setLoading(false);
+      return;
+    }
+
     if (isEditing || hasFetched) return;
 
     const fetchZoomLink = async () => {
@@ -33,7 +39,7 @@ export default function ZoomLink({ salaId }) {
         let link;
 
         // Solo los ingenieros deben poder editar el enlace
-        if (!hasRoles("ingeniero")) {
+        if (!hasRole("ingeniero")) {
           const cachedLink = localStorage.getItem(localStorageKey);
           if (cachedLink) {
             setZoomLink(cachedLink);
@@ -63,9 +69,13 @@ export default function ZoomLink({ salaId }) {
     };
 
     fetchZoomLink();
-  }, [salaId]);
+  }, [hasFetched, isEditing, salaId, zoomIntegrationEnabled]);
 
   const handleSaveLink = async () => {
+    if (!zoomIntegrationEnabled) {
+      return;
+    }
+
     try {
       setLoading(true);
       await updateZoomLink(zoomLink, salaId);
@@ -96,7 +106,11 @@ export default function ZoomLink({ salaId }) {
 
   return (
     <Box sx={{ mt: 4 }}>
-      {isEditing ? (
+      {!zoomIntegrationEnabled ? (
+        <Typography variant="body1" sx={{ color: "text.secondary" }}>
+          La integración de Zoom está temporalmente pausada.
+        </Typography>
+      ) : isEditing ? (
         <>
           <TextField
             label="Ingresar enlace de Zoom"
@@ -155,7 +169,7 @@ export default function ZoomLink({ salaId }) {
             </a>
           </Typography>
 
-          {hasRoles("ingeniero") && (
+          {hasRole("ingeniero") && (
             <Button
               variant="contained"
               sx={{

@@ -24,8 +24,8 @@ import {
   updateFile,
   updateFileStatus,
 } from "../../Services/FilesServices";
-
 import CheckWarning from "./CheckWarning";
+import { useUser } from "../context/UserContext";
 
 export default function FileManager({ salaId }) {
   const [files, setFiles] = useState([]);
@@ -35,10 +35,8 @@ export default function FileManager({ salaId }) {
   const [selectedName, setSelectedName] = useState("");
   const fileInputRef = useRef(null);
   const updateInputRef = useRef(null);
-  const roles = JSON.parse(localStorage.getItem("roles") || "[]");
+  const { hasRole } = useUser();
   const isSmallScreen = useMediaQuery((theme) => theme.breakpoints.down("md"));
-
-  const hasRoles = (role) => roles.includes(role);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -63,7 +61,7 @@ export default function FileManager({ salaId }) {
       const localStorageKey = `files-${salaId}`;
       let formattedFiles;
 
-      if (!hasRoles("archivero")) {
+      if (!hasRole("archivero")) {
         const cachedFiles = localStorage.getItem(localStorageKey);
 
         if (cachedFiles) {
@@ -256,7 +254,7 @@ export default function FileManager({ salaId }) {
                         fontSize: isSmallScreen ? "0.75rem" : "1rem",
                       }}
                     >
-                      {!(hasRoles("archivero") && isSmallScreen) && (
+                      {!(hasRole("archivero") && isSmallScreen) && (
                       <ArticleIcon
                         style={{
                           position: "absolute",
@@ -269,7 +267,7 @@ export default function FileManager({ salaId }) {
                     </Button>
                   </Tooltip>
 
-                  {hasRoles("archivero") && (
+                  {hasRole("archivero") && (
                     <>
                       <Button
                         variant="text"
@@ -304,7 +302,7 @@ export default function FileManager({ salaId }) {
           </Box>
         </Box>
       )}
-      {hasRoles("archivero") && (
+      {hasRole("archivero") && (
         <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 4 }}>
           <FormControl size="small" disabled={loading} sx={{ width: "150px" }}>
             <InputLabel sx={{ fontSize: 15 }}>Nombre</InputLabel>

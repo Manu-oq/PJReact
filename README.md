@@ -1,8 +1,13 @@
-# React + Vite
+# PJReact
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Variables de entorno
 
-Currently, two official plugins are available:
+El proyecto requiere un archivo local no versionado, por ejemplo `.env.local`, con estas variables:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```env
+VITE_API_BASE_URL=http://localhost:8000/api
+VITE_APP_VERSION=1.0.0
+VITE_ENABLE_ZOOM_LINK=false
+```
+
+El repositorio versiona sólo [.env.example](/home/manu/Programming/codes/Work/Pjpage/Codigo/PJReact/.env.example).

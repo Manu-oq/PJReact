@@ -5,6 +5,7 @@ import { useUser } from "../../../components/context/UserContext";
 export const ProtectedRoute = ({ children, allowedRoles = [], allowedPermissions = [] }) => {
   const { hasAnyRole, hasAnyPermission } = useUser();
 
+  // Este control solo protege navegación y UI; el backend sigue siendo la autoridad de permisos.
   const roleAllowed = allowedRoles.length === 0 || hasAnyRole(allowedRoles);
   const permissionAllowed = allowedPermissions.length === 0 || hasAnyPermission(allowedPermissions);
 

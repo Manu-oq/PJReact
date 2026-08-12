@@ -41,13 +41,6 @@ export const emitirVoto = async (votoData) => {
   return response.data;
 };
 
-export const exportarResultados = async () => {
-  const response = await apiClient.get(addVersionToUrl("/libertad-condicional/resultados/exportar"), {
-    responseType: "blob",
-  });
-  return response.data;
-};
-
 export const getResumenAdmin = async () => {
   const response = await apiClient.get(addVersionToUrl("/libertad-condicional/admin/resumen"));
   return response.data;

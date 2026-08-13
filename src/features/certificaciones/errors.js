@@ -29,6 +29,15 @@ export const getCertificationApiErrorMessage = (
     return "Debe validar el caso antes de generar el documento.";
   }
 
+  if (
+    status === 413 ||
+    normalizedMessage.includes("post data is too large") ||
+    normalizedMessage.includes("payload too large") ||
+    normalizedMessage.includes("too large")
+  ) {
+    return "El archivo excede el tamaño permitido por el servidor.";
+  }
+
   if (status === 422) {
     const errorBag =
       validationErrors && typeof validationErrors === "object" && !Array.isArray(validationErrors)

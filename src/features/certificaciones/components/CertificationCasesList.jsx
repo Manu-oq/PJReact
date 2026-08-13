@@ -67,9 +67,9 @@ export const CertificationCasesList = ({
   return (
     <Box
       sx={{
-        maxHeight: { xs: "none", md: 720 },
-        overflowY: { xs: "visible", md: "auto" },
-        pr: { xs: 0, md: 0.75 },
+        maxHeight: { xs: "none", lg: 720 },
+        overflowY: { xs: "visible", lg: "auto" },
+        pr: { xs: 0, lg: 0.75 },
       }}
     >
       <Stack spacing={2}>

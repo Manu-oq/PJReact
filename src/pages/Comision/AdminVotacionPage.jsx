@@ -26,6 +26,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CloseIcon from "@mui/icons-material/Close";
@@ -43,6 +45,7 @@ import {
   procesarLoteInformes,
 } from "../../Services/LibertadCondicionalService";
 import { EmptyState, PageErrorState, PageLoader } from "../../components/feedback/PageState";
+import { ResponsiveTableSection } from "../../components/ResponsiveTableSection";
 import { getApiErrorMessage } from "../../lib/apiClient";
 import {
   buildChunks,
@@ -98,6 +101,8 @@ const AdminVotacionPage = () => {
   const unidadIdNumerico = Number.parseInt(unidadId, 10);
   const unidadIdValido = Number.isInteger(unidadIdNumerico) && unidadIdNumerico > 0;
   const { puedeGestionarHistorico } = useComisionAccess();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [data, setData] = useState([]);
   const [nombreUnidad, setNombreUnidad] = useState("");
@@ -267,7 +272,7 @@ const AdminVotacionPage = () => {
   const statusDisplay = getResultadoStatus(selectedItem);
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 } }}>
       <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
           {feedback.message}
@@ -320,38 +325,40 @@ const AdminVotacionPage = () => {
       {!loading && !pageError && sortedData.length === 0 ? <EmptyState message="No hay votaciones registradas para esta unidad." /> : null}
 
       {!loading && !pageError && sortedData.length > 0 ? (
-        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#2b88de" }}>
-              <TableRow>
-                <TableCell sx={{ color: "white" }}>Rol</TableCell>
-                <TableCell sx={{ color: "white" }}>Postulante</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Conteo (Sí / No)</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Estado Actual</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Acción</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedData.map((row) => {
-                const resuelto = row.votos_si >= MAYORIA_NECESARIA_COMISION || row.votos_no >= MAYORIA_NECESARIA_COMISION;
-                return (
-                  <TableRow key={row.id} onClick={() => handleRowClick(row)} hover sx={{ cursor: "pointer", backgroundColor: resuelto ? "#f9fbe7" : "inherit" }}>
-                    <TableCell><strong>{row.rol}</strong></TableCell>
-                    <TableCell>{row.nombre_completo}</TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2" fontWeight="bold"><span style={{ color: "green" }}>{row.votos_si}</span> - <span style={{ color: "red" }}>{row.votos_no}</span></Typography>
-                      <LinearProgress variant="determinate" value={(row.total_votos / TOTAL_JUECES_COMISION) * 100} sx={{ mt: 1, height: 6, borderRadius: 5 }} />
-                    </TableCell>
-                    <TableCell align="center">
-                      {row.votos_si >= MAYORIA_NECESARIA_COMISION ? <Chip label="APROBADA" color="success" size="small" /> : row.votos_no >= MAYORIA_NECESARIA_COMISION ? <Chip label="RECHAZADA" color="error" size="small" /> : <Chip label="VOTANDO..." color="info" size="small" variant="outlined" />}
-                    </TableCell>
-                    <TableCell align="center"><IconButton color="primary"><ZoomInIcon /></IconButton></TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <ResponsiveTableSection minWidth={820}>
+          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+            <Table size={isMobile ? "small" : "medium"}>
+              <TableHead sx={{ backgroundColor: "#2b88de" }}>
+                <TableRow>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>Rol</TableCell>
+                  <TableCell sx={{ color: "white", minWidth: 220 }}>Postulante</TableCell>
+                  <TableCell align="center" sx={{ color: "white", minWidth: 160 }}>Conteo (Sí / No)</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>Estado Actual</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>Acción</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedData.map((row) => {
+                  const resuelto = row.votos_si >= MAYORIA_NECESARIA_COMISION || row.votos_no >= MAYORIA_NECESARIA_COMISION;
+                  return (
+                    <TableRow key={row.id} onClick={() => handleRowClick(row)} hover sx={{ cursor: "pointer", backgroundColor: resuelto ? "#f9fbe7" : "inherit" }}>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}><strong>{row.rol}</strong></TableCell>
+                      <TableCell>{row.nombre_completo}</TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" fontWeight="bold"><span style={{ color: "green" }}>{row.votos_si}</span> - <span style={{ color: "red" }}>{row.votos_no}</span></Typography>
+                        <LinearProgress variant="determinate" value={(row.total_votos / TOTAL_JUECES_COMISION) * 100} sx={{ mt: 1, height: 6, borderRadius: 5 }} />
+                      </TableCell>
+                      <TableCell align="center">
+                        {row.votos_si >= MAYORIA_NECESARIA_COMISION ? <Chip label="APROBADA" color="success" size="small" /> : row.votos_no >= MAYORIA_NECESARIA_COMISION ? <Chip label="RECHAZADA" color="error" size="small" /> : <Chip label="VOTANDO..." color="info" size="small" variant="outlined" />}
+                      </TableCell>
+                      <TableCell align="center"><IconButton color="primary"><ZoomInIcon /></IconButton></TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </ResponsiveTableSection>
       ) : null}
 
       <Dialog open={openCerrarCiclo} onClose={() => setOpenCerrarCiclo(false)} maxWidth="sm" fullWidth>
@@ -381,18 +388,25 @@ const AdminVotacionPage = () => {
             </Alert>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenCerrarCiclo(false)} color="inherit">Cancelar</Button>
-          <Button onClick={handleCerrarCiclo} variant="contained" disabled={cerrandoCiclo}>
+        <DialogActions sx={{ flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+          <Button onClick={() => setOpenCerrarCiclo(false)} color="inherit" sx={{ width: { xs: "100%", sm: "auto" } }}>Cancelar</Button>
+          <Button onClick={handleCerrarCiclo} variant="contained" disabled={cerrandoCiclo} sx={{ width: { xs: "100%", sm: "auto" } }}>
             {cerrandoCiclo ? "Cerrando..." : "Cerrar ciclo"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="lg" fullWidth PaperProps={{ sx: { minHeight: { xs: "auto", md: "80vh" }, borderRadius: 4, borderTop: `15px solid ${statusDisplay.color}`, display: "flex", flexDirection: "column" } }}>
+      <Dialog
+        open={openDetail}
+        onClose={handleCloseDetail}
+        maxWidth="lg"
+        fullWidth
+        fullScreen={isMobile}
+        PaperProps={{ sx: { minHeight: { xs: "100dvh", md: "80vh" }, borderRadius: { xs: 0, sm: 4 }, borderTop: { xs: "none", sm: `15px solid ${statusDisplay.color}` }, display: "flex", flexDirection: "column" } }}
+      >
         {selectedItem ? (
-          <DialogContent sx={{ p: 0, display: "flex", flex: 1, overflow: "hidden" }}>
-            <Box sx={{ position: "absolute", right: 20, top: 20, zIndex: 10 }}><IconButton onClick={handleCloseDetail} size="large"><CloseIcon fontSize="large" /></IconButton></Box>
+          <DialogContent sx={{ p: 0, display: "flex", flex: 1, overflowY: "auto" }}>
+            <Box sx={{ position: "absolute", right: { xs: 10, md: 20 }, top: { xs: 10, md: 20 }, zIndex: 10 }}><IconButton onClick={handleCloseDetail} size="large"><CloseIcon fontSize="large" /></IconButton></Box>
             <Grid container sx={{ flex: 1 }}>
               <Grid item xs={12} md={4} sx={{ p: { xs: 3, md: 5 }, backgroundColor: "#f8f9fa", borderRight: { xs: "none", md: "1px solid #ddd" }, borderBottom: { xs: "1px solid #ddd", md: "none" } }}>
                 <Typography variant="overline" display="block">Rol</Typography>
@@ -402,7 +416,7 @@ const AdminVotacionPage = () => {
                 <Typography variant="h3" color="#081f34" sx={{ fontSize: { xs: "1.8rem", md: "2.4rem" } }}>{selectedItem.nombre_completo}</Typography>
                 <Box sx={{ mt: { xs: 4, md: 10 } }}>
                   <Typography variant="h6" gutterBottom sx={{ borderBottom: "1px solid #ddd", pb: 1 }}>Detalle de Jueces:</Typography>
-                  <ul style={{ paddingLeft: "20px", marginTop: "15px", listStyleType: "none" }}>
+                  <ul style={{ paddingLeft: "0", marginTop: "15px", listStyleType: "none" }}>
                     {(selectedItem.jueces_votaron || []).map((juezObj, index) => {
                       const juezNormalizado = normalizeJuezVotacion(juezObj);
                       const voteDisplay = getVoteDisplay(juezNormalizado.voto);

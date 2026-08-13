@@ -29,27 +29,36 @@ const CardInformation = () => {
               <Typography variant="h5" color="primary.main" sx={{ mb: 2 }}>
                 Datos de atención
               </Typography>
-              <table className="table-information">
-                <thead>
-                  <tr>
-                    <th>Horario de turno presencial</th>
-                    <th>Dirección</th>
-                    <th>Datos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Lunes a Viernes: 08:00 a 14:00</td>
-                    <td>Manuel Bulnes 0355, Temuco</td>
-                    <td>RUT: 60.311.000-5</td>
-                  </tr>
-                  <tr>
-                    <td>Sábado: 09:00 a 12:00</td>
-                    <td>Temuco, Región de La Araucanía</td>
-                    <td>Cuenta corriente: 62.900.103.641</td>
-                  </tr>
-                </tbody>
-              </table>
+              <Box className="responsive-scroll-shell">
+                <Typography className="responsive-scroll-shell__hint">
+                  Deslice horizontalmente para revisar la tabla completa.
+                </Typography>
+                <Box className="responsive-scroll-shell__viewport">
+                  <Box className="responsive-scroll-shell__content">
+                    <table className="table-information">
+                      <thead>
+                        <tr>
+                          <th>Horario de turno presencial</th>
+                          <th>Dirección</th>
+                          <th>Datos</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Lunes a Viernes: 08:00 a 14:00</td>
+                          <td>Manuel Bulnes 0355, Temuco</td>
+                          <td>RUT: 60.311.000-5</td>
+                        </tr>
+                        <tr>
+                          <td>Sábado: 09:00 a 12:00</td>
+                          <td>Temuco, Región de La Araucanía</td>
+                          <td>Cuenta corriente: 62.900.103.641</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Box>
+                </Box>
+              </Box>
             </Paper>
           </Grid>
 
@@ -58,28 +67,37 @@ const CardInformation = () => {
               <Typography variant="h5" color="primary.main" sx={{ mb: 2 }}>
                 Contacto institucional
               </Typography>
-              <table className="table-information">
-                <thead>
-                  <tr>
-                    <th>Área</th>
-                    <th>Correo electrónico</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Cuenta genérica</td>
-                    <td className="mail-hightlight">ca_temuco@pjud.cl</td>
-                  </tr>
-                  <tr>
-                    <td>Presidencia</td>
-                    <td className="mail-hightlight">presidencia_catemuco@pjud.cl</td>
-                  </tr>
-                  <tr>
-                    <td>Pleno</td>
-                    <td className="mail-hightlight">pleno_ca_temuco@pjud.cl</td>
-                  </tr>
-                </tbody>
-              </table>
+              <Box className="responsive-scroll-shell">
+                <Typography className="responsive-scroll-shell__hint">
+                  Deslice horizontalmente para revisar la tabla completa.
+                </Typography>
+                <Box className="responsive-scroll-shell__viewport">
+                  <Box className="responsive-scroll-shell__content">
+                    <table className="table-information">
+                      <thead>
+                        <tr>
+                          <th>Área</th>
+                          <th>Correo electrónico</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Cuenta genérica</td>
+                          <td className="mail-hightlight">ca_temuco@pjud.cl</td>
+                        </tr>
+                        <tr>
+                          <td>Presidencia</td>
+                          <td className="mail-hightlight">presidencia_catemuco@pjud.cl</td>
+                        </tr>
+                        <tr>
+                          <td>Pleno</td>
+                          <td className="mail-hightlight">pleno_ca_temuco@pjud.cl</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Box>
+                </Box>
+              </Box>
             </Paper>
           </Grid>
         </Grid>

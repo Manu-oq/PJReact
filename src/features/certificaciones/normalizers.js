@@ -79,6 +79,18 @@ export const normalizeCertificationCaseFile = (payload = {}) => {
   };
 };
 
+export const normalizeCertificationUpload = (payload = {}) => {
+  const upload = ensureObject(payload);
+
+  return {
+    upload_id: ensureString(upload.upload_id || upload.id),
+    document_type: ensureString(upload.document_type),
+    original_name: ensureString(upload.original_name),
+    size_bytes: ensureNullableNumber(upload.size_bytes),
+    mime_type: ensureNullableString(upload.mime_type),
+  };
+};
+
 const normalizeNullableStringRecord = (payload) =>
   Object.fromEntries(
     Object.entries(ensureObject(payload)).map(([key, value]) => [key, ensureNullableString(value)])
@@ -163,4 +175,3 @@ export const normalizeCertificationCaseList = (payload = []) => {
     meta: paginatedPayload.meta === undefined ? undefined : paginatedPayload.meta,
   };
 };
-

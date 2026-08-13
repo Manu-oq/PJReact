@@ -127,13 +127,32 @@ export const CertificationDetailPanel = ({
             </Box>
 
             <Box display="flex" gap={1.5} flexWrap="wrap">
-              <Button variant="contained" startIcon={<RuleIcon />} onClick={onValidate} disabled={actionsDisabled || validating || generating || downloading}>
+              <Button
+                variant="contained"
+                startIcon={<RuleIcon />}
+                onClick={onValidate}
+                disabled={actionsDisabled || validating || generating || downloading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 {validating ? "Validando..." : "Validar"}
               </Button>
-              <Button variant="contained" color="secondary" startIcon={<TaskAltIcon />} onClick={onGenerate} disabled={actionsDisabled || generating || validating || downloading}>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<TaskAltIcon />}
+                onClick={onGenerate}
+                disabled={actionsDisabled || generating || validating || downloading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 {generating ? "Generando..." : "Generar Word"}
               </Button>
-              <Button variant="outlined" startIcon={<DownloadIcon />} onClick={onDownload} disabled={actionsDisabled || !selectedCase.has_document || downloading}>
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={onDownload}
+                disabled={actionsDisabled || !selectedCase.has_document || downloading}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
                 {downloading ? "Descargando..." : "Descargar Word"}
               </Button>
             </Box>
@@ -145,7 +164,7 @@ export const CertificationDetailPanel = ({
             ) : null}
 
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} xl={6}>
                 <Card variant="outlined" sx={{ height: "100%" }}>
                   <CardContent>
                     <Stack spacing={1.5}>
@@ -162,7 +181,7 @@ export const CertificationDetailPanel = ({
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} xl={6}>
                 <Card variant="outlined" sx={{ height: "100%" }}>
                   <CardContent>
                     <Stack spacing={1.5}>
@@ -230,7 +249,7 @@ export const CertificationDetailPanel = ({
             <Divider />
 
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} xl={6}>
                 <Card variant="outlined" sx={{ height: "100%" }}>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
@@ -241,7 +260,7 @@ export const CertificationDetailPanel = ({
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} xl={6}>
                 <Card variant="outlined" sx={{ height: "100%" }}>
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
@@ -283,7 +302,7 @@ export const CertificationDetailPanel = ({
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                     fontFamily: '"Roboto Mono", monospace',
-                    fontSize: "0.9rem",
+                    fontSize: { xs: "0.82rem", md: "0.9rem" },
                     lineHeight: 1.55,
                     minHeight: 180,
                     maxHeight: 460,

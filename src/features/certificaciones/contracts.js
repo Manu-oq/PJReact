@@ -9,6 +9,11 @@ export const CERTIFICATION_UPLOAD_FIELDS = Object.freeze({
   SEGUNDA_INSTANCIA: "segunda_instancia",
 });
 
+export const CERTIFICATION_UPLOAD_REFERENCE_FIELDS = Object.freeze({
+  PRIMERA_INSTANCIA: "primera_instancia_upload_id",
+  SEGUNDA_INSTANCIA: "segunda_instancia_upload_id",
+});
+
 export const CERTIFICATION_CASE_STATUSES = Object.freeze({
   CREATED: "created",
   UPLOADED: "uploaded",
@@ -17,6 +22,8 @@ export const CERTIFICATION_CASE_STATUSES = Object.freeze({
   GENERATED: "generated",
   FAILED: "failed",
 });
+
+export const CERTIFICATION_MAX_UPLOAD_SIZE_BYTES = 100 * 1024 * 1024;
 
 /**
  * @typedef {Object.<string, string>} CertificationValidationErrors
@@ -56,6 +63,15 @@ export const CERTIFICATION_CASE_STATUSES = Object.freeze({
  * @property {string} extraction_status
  * @property {string|null} extraction_method
  * @property {Record<string, unknown>|null} [metadata]
+ */
+
+/**
+ * @typedef {Object} CertificationUpload
+ * @property {string} upload_id
+ * @property {string} document_type
+ * @property {string} original_name
+ * @property {number|null} size_bytes
+ * @property {string|null} mime_type
  */
 
 /**
@@ -109,3 +125,5 @@ export const isCertificationTypeCode = (value) =>
 export const isCertificationUploadField = (value) =>
   Object.values(CERTIFICATION_UPLOAD_FIELDS).includes(value);
 
+export const isCertificationUploadReferenceField = (value) =>
+  Object.values(CERTIFICATION_UPLOAD_REFERENCE_FIELDS).includes(value);

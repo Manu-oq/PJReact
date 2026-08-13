@@ -1,36 +1,22 @@
-import { useEffect, useState } from "react";
+import { Alert, Box, Button, Container, Grid, Snackbar, Stack, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import {
-  Alert,
-  Box,
-  Button,
-  Container,
-  Snackbar,
-  Stack,
-  Step,
-  StepLabel,
-  Stepper,
-  Typography,
-} from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { CertificationCreateForm } from "../features/certificaciones/components/CertificationCreateForm";
+import { CertificationCasesList } from "../features/certificaciones/components/CertificationCasesList";
 import { CertificationDetailPanel } from "../features/certificaciones/components/CertificationDetailPanel";
 import { useCertificaciones } from "../features/certificaciones/hooks/useCertificaciones";
 import { PageErrorState, PageLoader } from "../components/feedback/PageState";
-import { CERTIFICACIONES_CASES_ROUTE } from "../features/certificaciones/utils/constants";
+import { CERTIFICACIONES_ROUTE } from "../features/certificaciones/utils/constants";
 
-const certificationSteps = ["Nuevo caso", "Revisión y corrección"];
-
-const CertificacionesPage = () => {
+const CertificacionesCasesPage = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(0);
   const {
-    types,
+    cases,
+    selectedCaseId,
     selectedCase,
     selectedExtraction,
     loadingInitial,
+    loadingCases,
     loadingDetail,
-    creatingCase,
     savingOverrides,
     validatingCase,
     generatingDocument,
@@ -39,29 +25,17 @@ const CertificacionesPage = () => {
     feedback,
     closeFeedback,
     reloadPage,
-    createCase,
-    uploadCaseFile,
+    selectCase,
     saveOverrides,
     validateCase,
     generateDocument,
     downloadDocument,
-  } = useCertificaciones({ autoSelectFirstCase: false });
-
-  useEffect(() => {
-    if (selectedCase) {
-      setCurrentStep(1);
-    }
-  }, [selectedCase]);
-
-  const handleCreateCase = async (payload) => {
-    await createCase(payload);
-    setCurrentStep(1);
-  };
+  } = useCertificaciones();
 
   if (loadingInitial) {
     return (
       <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 }, minHeight: "80vh" }}>
-        <PageLoader message="Cargando módulo de certificaciones..." minHeight={320} />
+        <PageLoader message="Cargando casos recientes..." minHeight={320} />
       </Container>
     );
   }
@@ -90,50 +64,30 @@ const CertificacionesPage = () => {
       <Stack spacing={3}>
         <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} gap={2} flexWrap="wrap">
           <Typography variant="h4" color="primary.main" fontWeight="bold">
-            Certificaciones y resúmenes
+            Casos recientes
           </Typography>
 
           <Button
             variant="outlined"
-            startIcon={<VisibilityIcon />}
-            onClick={() => navigate(CERTIFICACIONES_CASES_ROUTE)}
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate(CERTIFICACIONES_ROUTE)}
             sx={{ width: { xs: "100%", sm: "auto" } }}
           >
-            Casos recientes
+            Volver a nuevo caso
           </Button>
         </Box>
 
-        <Stepper activeStep={currentStep} alternativeLabel sx={{ px: { xs: 0, md: 2 } }}>
-          {certificationSteps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+        <Grid container spacing={3}>
+          <Grid item xs={12} lg={4}>
+            <CertificationCasesList
+              cases={cases}
+              selectedCaseId={selectedCaseId}
+              loading={loadingCases}
+              onSelectCase={selectCase}
+            />
+          </Grid>
 
-        {currentStep === 0 ? (
-          <CertificationCreateForm
-            types={types}
-            creating={creatingCase}
-            onUploadFile={uploadCaseFile}
-            onSubmit={handleCreateCase}
-          />
-        ) : (
-          <Stack spacing={2.5}>
-            <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} gap={2} flexWrap="wrap">
-              <Typography variant="h5" color="primary.main" fontWeight="bold">
-                Revisión y corrección
-              </Typography>
-
-              <Button
-                variant="text"
-                onClick={() => setCurrentStep(0)}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                Crear otro caso
-              </Button>
-            </Box>
-
+          <Grid item xs={12} lg={8}>
             <CertificationDetailPanel
               selectedCase={selectedCase}
               selectedExtraction={selectedExtraction}
@@ -147,11 +101,11 @@ const CertificacionesPage = () => {
               onDownload={downloadDocument}
               onSaveOverrides={saveOverrides}
             />
-          </Stack>
-        )}
+          </Grid>
+        </Grid>
       </Stack>
     </Container>
   );
 };
 
-export default CertificacionesPage;
+export default CertificacionesCasesPage;

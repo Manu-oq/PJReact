@@ -7,6 +7,7 @@ import {
   getCertificationCases,
   getCertificationExtraction,
   getCertificationTypes,
+  uploadCertificationCaseFile,
   updateCertificationExtraction,
   validateCertificationCase,
 } from "../../../Services/CertificacionesService";
@@ -64,7 +65,7 @@ const buildDocumentName = (certificationCase) => {
   return `certificacion-${certificationCase.id}.docx`;
 };
 
-export const useCertificaciones = () => {
+export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
   const hasLoadedRef = useRef(false);
   const [types, setTypes] = useState([]);
   const [cases, setCases] = useState([]);
@@ -139,7 +140,7 @@ export const useCertificaciones = () => {
         setCasesLinks(nextCollection.links);
 
         const currentSelectedId = preferredCaseId ?? selectedCaseId;
-        const fallbackSelectedId = nextCases[0]?.id ?? null;
+        const fallbackSelectedId = autoSelectFirstCase ? nextCases[0]?.id ?? null : null;
         const resolvedSelectedId = nextCases.some((item) => item.id === currentSelectedId)
           ? currentSelectedId
           : fallbackSelectedId;
@@ -172,7 +173,7 @@ export const useCertificaciones = () => {
         }
       }
     },
-    [loadCaseDetail, selectedCase, selectedCaseId]
+    [autoSelectFirstCase, loadCaseDetail, selectedCase, selectedCaseId]
   );
 
   const loadInitialData = useCallback(async () => {
@@ -227,6 +228,18 @@ export const useCertificaciones = () => {
     },
     [loadCases]
   );
+
+  const handleUploadCaseFile = useCallback(async (documentType, file) => {
+    try {
+      return await uploadCertificationCaseFile(documentType, file);
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: getCertificationApiErrorMessage(error, "No se pudo subir el archivo seleccionado."),
+      });
+      throw error;
+    }
+  }, []);
 
   const handleSaveOverrides = useCallback(
     async (manualOverrides) => {
@@ -363,6 +376,7 @@ export const useCertificaciones = () => {
       refreshCases: loadCases,
       selectCase: handleSelectCase,
       createCase: handleCreateCase,
+      uploadCaseFile: handleUploadCaseFile,
       saveOverrides: handleSaveOverrides,
       validateCase: handleValidateCase,
       generateDocument: handleGenerateDocument,
@@ -380,6 +394,7 @@ export const useCertificaciones = () => {
       handleCreateCase,
       handleDownloadDocument,
       handleGenerateDocument,
+      handleUploadCaseFile,
       handleSaveOverrides,
       handleSelectCase,
       handleValidateCase,

@@ -66,7 +66,7 @@ const LoginForm = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        minHeight: "calc(100vh - 120px)",
+        minHeight: "calc(100dvh - 140px)",
         py: { xs: 4, md: 6 },
       }}
     >
@@ -87,14 +87,14 @@ const LoginForm = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              minHeight: { xs: 180, md: "100%" },
+              minHeight: { xs: 200, md: "100%" },
             }}
           >
             <Box sx={{ textAlign: "center" }}>
               <Box
                 sx={{
-                  width: 88,
-                  height: 88,
+                  width: { xs: 72, sm: 88 },
+                  height: { xs: 72, sm: 88 },
                   mx: "auto",
                   mb: 2,
                   borderRadius: "999px",
@@ -108,7 +108,7 @@ const LoginForm = () => {
                 <LockOutlinedIcon sx={{ fontSize: 38, color: "#fff" }} />
               </Box>
               <Chip label="Acceso institucional" sx={{ mb: 2, color: "#fff", backgroundColor: "rgba(255,255,255,0.12)" }} />
-              <Typography variant="h4" sx={{ color: "#fff" }}>
+              <Typography variant="h4" sx={{ color: "#fff", fontSize: { xs: "1.65rem", sm: "2rem" } }}>
                 Ingreso a la plataforma
               </Typography>
             </Box>
@@ -169,6 +169,7 @@ const LoginForm = () => {
                       sx={{
                         mt: { xs: 1, sm: 2 },
                         py: 1.6,
+                        alignSelf: "stretch",
                       }}
                     >
                       {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}

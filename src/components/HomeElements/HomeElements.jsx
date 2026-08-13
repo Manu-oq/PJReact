@@ -39,7 +39,7 @@ export const HomeElements = () => {
           backgroundSize: "cover",
         }}
       >
-        <Container maxWidth="xl" sx={{ height: "100%", display: "flex", alignItems: "center" }}>
+        <Container maxWidth="xl" sx={{ height: "100%", display: "flex", alignItems: "center", py: { xs: 2, md: 0 } }}>
           <Paper className="hero-panel">
             <Chip label="Poder Judicial de Chile" className="hero-chip" />
             <Typography variant="h1" className="hero-title">
@@ -51,7 +51,7 @@ export const HomeElements = () => {
 
             <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} className="hero-highlights">
               {highlights.map((item) => (
-                <Box key={item.label} className="hero-highlight">
+                <Box key={item.label} className="hero-highlight" sx={{ width: { xs: "100%", md: "auto" } }}>
                   <Box className="hero-highlight-icon">{item.icon}</Box>
                   <Box>
                     <Typography variant="caption" className="hero-highlight-label">
@@ -79,10 +79,10 @@ export const HomeElements = () => {
         </Box>
 
         <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
-          <Grid item xs={12} sm={6} md="auto" display="flex" justifyContent="center">
+          <Grid item xs={12} sm={6} md="auto" display="flex" justifyContent="center" sx={{ width: { xs: "100%", md: "auto" } }}>
             <CardComponent url="https://buzon.pjud.cl/formulario" title="publico" img={publico} />
           </Grid>
-          <Grid item xs={12} sm={6} md="auto" display="flex" justifyContent="center">
+          <Grid item xs={12} sm={6} md="auto" display="flex" justifyContent="center" sx={{ width: { xs: "100%", md: "auto" } }}>
             <CardComponent url="/Apertura-juramentos" title="apertura" img={apertura} />
           </Grid>
         </Grid>
@@ -90,7 +90,7 @@ export const HomeElements = () => {
 
       <Container maxWidth="xl" sx={{ pb: { xs: 6, md: 8 } }}>
         <Grid container spacing={4} alignItems="stretch" justifyContent="center">
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} lg={5}>
             <Paper className="info-panel">
               <Typography variant="overline" className="section-kicker">
                 Información institucional
@@ -107,7 +107,7 @@ export const HomeElements = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} lg={7}>
             <Paper className="map-panel">
               <Typography variant="h5" color="primary.main" sx={{ mb: 2 }}>
                 Ubicación

@@ -1,19 +1,15 @@
 import { apiClient } from "../lib/apiClient";
 import { addVersionToUrl } from "./AddVersionToURL";
 import {
-  CERTIFICATION_UPLOAD_FIELDS,
-  isCertificationUploadField,
-} from "../features/certificaciones/contracts";
-import {
   normalizeCertificationCase,
   normalizeCertificationCaseList,
   normalizeCertificationExtraction,
   normalizeCertificationType,
+  normalizeCertificationUpload,
 } from "../features/certificaciones/normalizers";
 
 const CERTIFICATIONS_BASE_PATH = "/certificaciones";
-const isBlobValue = (value) => typeof Blob !== "undefined" && value instanceof Blob;
-const isFileValue = (value) => typeof File !== "undefined" && value instanceof File;
+const CERTIFICATIONS_UPLOADS_PATH = `${CERTIFICATIONS_BASE_PATH}/uploads`;
 
 const buildRequestParams = (params = {}) =>
   Object.fromEntries(
@@ -33,32 +29,11 @@ const appendFormDataValue = (formData, key, value) => {
   formData.append(key, value);
 };
 
-export const buildCertificationCaseFormData = (payload = {}) => {
+export const buildCertificationUploadFormData = (documentType, file) => {
   const formData = new FormData();
 
-  Object.entries(payload).forEach(([key, value]) => {
-    if (key === CERTIFICATION_UPLOAD_FIELDS.PRIMERA_INSTANCIA || key === CERTIFICATION_UPLOAD_FIELDS.SEGUNDA_INSTANCIA) {
-      appendFormDataValue(formData, key, value);
-      return;
-    }
-
-    if (isCertificationUploadField(key)) {
-      appendFormDataValue(formData, key, value);
-      return;
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach((item) => appendFormDataValue(formData, `${key}[]`, item));
-      return;
-    }
-
-    if (typeof value === "object" && !isBlobValue(value) && !isFileValue(value)) {
-      formData.append(key, JSON.stringify(value));
-      return;
-    }
-
-    appendFormDataValue(formData, key, value);
-  });
+  appendFormDataValue(formData, "document_type", documentType);
+  appendFormDataValue(formData, "file", file);
 
   return formData;
 };
@@ -76,16 +51,26 @@ export const getCertificationCases = async (params = {}) => {
   return normalizeCertificationCaseList(response.data);
 };
 
-export const createCertificationCase = async (payload = {}) => {
+export const uploadCertificationCaseFile = async (documentType, file) => {
   const response = await apiClient.post(
-    addVersionToUrl(`${CERTIFICATIONS_BASE_PATH}/casos`),
-    buildCertificationCaseFormData(payload),
+    addVersionToUrl(CERTIFICATIONS_UPLOADS_PATH),
+    buildCertificationUploadFormData(documentType, file),
     {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     }
   );
+
+  return normalizeCertificationUpload(response.data);
+};
+
+export const createCertificationCase = async (payload = {}) => {
+  const requestPayload = Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+
+  const response = await apiClient.post(addVersionToUrl(`${CERTIFICATIONS_BASE_PATH}/casos`), requestPayload);
 
   return normalizeCertificationCase(response.data);
 };
@@ -109,7 +94,7 @@ export const updateCertificationExtraction = async (caseId, manualOverrides = {}
     { manual_overrides: manualOverrides }
   );
 
-  return normalizeCertificationExtraction(response.data);
+  return normalizeCertificationCase(response.data);
 };
 
 export const validateCertificationCase = async (caseId) => {

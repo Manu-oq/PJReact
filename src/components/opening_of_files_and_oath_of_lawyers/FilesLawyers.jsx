@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 
 export const FilesLawyers = () => {
   return (
-    <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 4, md: 6 } }}>
+    <Box sx={{ px: { xs: 1.5, sm: 2, md: 4 }, py: { xs: 4, md: 6 } }}>
       <Grid container spacing={4} sx={{ justifyContent: "center", maxWidth: 1380, mx: "auto" }}>
         <Grid xs={12}>
           <Paper
@@ -67,7 +67,7 @@ export const FilesLawyers = () => {
               rel="noopener noreferrer"
               variant="contained"
               startIcon={<DownloadOutlinedIcon />}
-              sx={{ mb: 2.5 }}
+              sx={{ mb: 2.5, width: { xs: "100%", sm: "auto" } }}
             >
               Descargar plantilla Word
             </Button>

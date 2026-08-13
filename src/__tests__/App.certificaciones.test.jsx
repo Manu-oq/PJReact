@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../App";
 import { clearStoredSession, persistSession } from "../utils/authStorage";
 import { AUTH_PERMISSIONS } from "../features/auth/constants/authorization";
+import { CERTIFICACIONES_CASES_ROUTE } from "../features/certificaciones/utils/constants";
 
 vi.mock("../features/comision/hooks/useComisionAccess", () => ({
   useComisionAccess: () => ({
@@ -53,6 +54,10 @@ vi.mock("../pages/Comision/HistoricoPostulantesPage", () => ({
 
 vi.mock("../pages/CertificacionesPage", () => ({
   default: () => <div>certificaciones page</div>,
+}));
+
+vi.mock("../pages/CertificacionesCasesPage", () => ({
+  default: () => <div>certificaciones recent cases page</div>,
 }));
 
 vi.mock("../components/partials/footer/Footer", () => ({
@@ -141,5 +146,35 @@ describe("App certificaciones integration", () => {
     renderApp(["/certificaciones"]);
 
     expect(await screen.findAllByText("certificaciones page")).not.toHaveLength(0);
+  });
+
+  it("mantiene la ruta de casos recientes protegida por permiso", async () => {
+    persistSession(createSession({ permissions: [] }));
+
+    const firstRender = renderApp([CERTIFICACIONES_CASES_ROUTE]);
+
+    expect(await screen.findByText("home page")).toBeInTheDocument();
+    expect(screen.queryByText("certificaciones recent cases page")).not.toBeInTheDocument();
+    firstRender.unmount();
+
+    clearStoredSession();
+    persistSession(createSession({ permissions: [AUTH_PERMISSIONS.GESTIONAR_CERTIFICACIONES] }));
+
+    renderApp([CERTIFICACIONES_CASES_ROUTE]);
+
+    expect(await screen.findAllByText("certificaciones recent cases page")).not.toHaveLength(0);
+  });
+
+  it("redirige rutas no definidas al home", async () => {
+    renderApp(["/ruta-que-no-existe"]);
+
+    expect(await screen.findByText("home page")).toBeInTheDocument();
+  });
+
+  it("redirige rutas protegidas al home cuando no hay sesión o permisos", async () => {
+    renderApp(["/comision-libertad-condicional"]);
+
+    expect(await screen.findByText("home page")).toBeInTheDocument();
+    expect(screen.queryByText("comision page")).not.toBeInTheDocument();
   });
 });

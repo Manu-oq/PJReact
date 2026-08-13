@@ -18,7 +18,7 @@ vi.mock("../../../Services/AddVersionToURL", () => ({
 }));
 
 import {
-  buildCertificationCaseFormData,
+  buildCertificationUploadFormData,
   createCertificationCase,
   downloadCertificationDocument,
   generateCertificationDocument,
@@ -26,6 +26,7 @@ import {
   getCertificationCases,
   getCertificationExtraction,
   getCertificationTypes,
+  uploadCertificationCaseFile,
   updateCertificationExtraction,
   validateCertificationCase,
 } from "../../../Services/CertificacionesService";
@@ -93,10 +94,49 @@ describe("CertificacionesService", () => {
     });
   });
 
-  it("construye FormData para crear casos con uno o dos pdfs", async () => {
+  it("sube archivos individuales en multipart y normaliza la referencia de upload", async () => {
     const primeraInstancia = new File(["pdf-a"], "primera.pdf", { type: "application/pdf" });
-    const segundaInstancia = new File(["pdf-b"], "segunda.pdf", { type: "application/pdf" });
+    mockApiClient.post.mockResolvedValue({
+      data: {
+        upload_id: "upl_123",
+        document_type: "primera_instancia",
+        original_name: "primera.pdf",
+        size_bytes: 1200,
+        mime_type: "application/pdf",
+      },
+    });
 
+    const result = await uploadCertificationCaseFile("primera_instancia", primeraInstancia);
+
+    const [url, formData, config] = mockApiClient.post.mock.calls[0];
+
+    expect(url).toBe("versioned:/certificaciones/uploads");
+    expect(formData).toBeInstanceOf(FormData);
+    expect(formData.get("document_type")).toBe("primera_instancia");
+    expect(formData.get("file")).toBe(primeraInstancia);
+    expect(config).toEqual({
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    expect(result).toEqual({
+      upload_id: "upl_123",
+      document_type: "primera_instancia",
+      original_name: "primera.pdf",
+      size_bytes: 1200,
+      mime_type: "application/pdf",
+    });
+  });
+
+  it("expone helper de FormData reutilizable para uploads", () => {
+    const file = new File(["pdf"], "resolucion.pdf", { type: "application/pdf" });
+    const formData = buildCertificationUploadFormData("primera_instancia", file);
+
+    expect(formData.get("document_type")).toBe("primera_instancia");
+    expect(formData.get("file")).toBe(file);
+  });
+
+  it("crea casos con payload liviano basado en upload ids", async () => {
     mockApiClient.post.mockResolvedValue({
       data: {
         id: 15,
@@ -120,56 +160,40 @@ describe("CertificacionesService", () => {
     });
 
     await createCertificationCase({
-      type_code: "resumen",
+      certification_type_id: 3,
       title: "Caso Demo",
-      primera_instancia: primeraInstancia,
-      segunda_instancia: segundaInstancia,
-      tags: ["uno", "dos"],
-      metadata: { origen: "test" },
+      primera_instancia_upload_id: "upl_123",
+      segunda_instancia_upload_id: "upl_456",
+      ignored_null: null,
     });
 
-    const [url, formData, config] = mockApiClient.post.mock.calls[0];
-
-    expect(url).toBe("versioned:/certificaciones/casos");
-    expect(formData).toBeInstanceOf(FormData);
-    expect(formData.get("type_code")).toBe("resumen");
-    expect(formData.get("title")).toBe("Caso Demo");
-    expect(formData.get("primera_instancia")).toBe(primeraInstancia);
-    expect(formData.get("segunda_instancia")).toBe(segundaInstancia);
-    expect(formData.getAll("tags[]")).toEqual(["uno", "dos"]);
-    expect(formData.get("metadata")).toBe(JSON.stringify({ origen: "test" }));
-    expect(config).toEqual({
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    expect(mockApiClient.post).toHaveBeenCalledWith("versioned:/certificaciones/casos", {
+      certification_type_id: 3,
+      title: "Caso Demo",
+      primera_instancia_upload_id: "upl_123",
+      segunda_instancia_upload_id: "upl_456",
     });
-  });
-
-  it("expone helper de FormData reutilizable", () => {
-    const file = new File(["pdf"], "resolucion.pdf", { type: "application/pdf" });
-    const formData = buildCertificationCaseFormData({
-      type_code: "certificacion_tc",
-      primera_instancia: file,
-      payload: { foo: "bar" },
-    });
-
-    expect(formData.get("type_code")).toBe("certificacion_tc");
-    expect(formData.get("primera_instancia")).toBe(file);
-    expect(formData.get("payload")).toBe(JSON.stringify({ foo: "bar" }));
   });
 
   it("usa los endpoints esperados para detalle, extracción, validación y generación", async () => {
     mockApiClient.get
       .mockResolvedValueOnce({ data: { id: "9", status: "validated", type: { id: "2", code: "resumen", name: "Resumen" } } })
       .mockResolvedValueOnce({ data: { case_id: "9", status: "extracted" } });
-    mockApiClient.put.mockResolvedValue({ data: { case_id: "9", status: "validated", manual_overrides: { rit: "123" } } });
+    mockApiClient.put.mockResolvedValue({
+      data: {
+        id: "9",
+        status: "validated",
+        type: { id: "2", code: "resumen", name: "Resumen" },
+        manual_overrides: { rit: "123" },
+      },
+    });
     mockApiClient.post
       .mockResolvedValueOnce({ data: { id: "9", status: "validated", type: { id: "2", code: "resumen", name: "Resumen" } } })
       .mockResolvedValueOnce({ data: { id: "9", status: "generated", type: { id: "2", code: "resumen", name: "Resumen" } } });
 
     const caseResult = await getCertificationCase(9);
     const extractionResult = await getCertificationExtraction(9);
-    const updatedExtraction = await updateCertificationExtraction(9, { rit: "123" });
+    const updatedCase = await updateCertificationExtraction(9, { rit: "123" });
     const validatedCase = await validateCertificationCase(9);
     const generatedCase = await generateCertificationDocument(9);
 
@@ -189,7 +213,7 @@ describe("CertificacionesService", () => {
     );
     expect(caseResult.status).toBe("validated");
     expect(extractionResult.case_id).toBe(9);
-    expect(updatedExtraction.manual_overrides).toEqual({ rit: "123" });
+    expect(updatedCase.status).toBe("validated");
     expect(validatedCase.status).toBe("validated");
     expect(generatedCase.status).toBe("generated");
   });

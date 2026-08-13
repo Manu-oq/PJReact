@@ -39,6 +39,15 @@ img#id-img-Logo-Pjud {
 
 @media screen and (max-width: 768px) {
   img#id-img-Logo-Pjud {
-    height: 100px;
+    height: 88px;
+  }
+
+  .footer .list-footer {
+    gap: 0.7rem;
+    font-size: 0.92rem;
+  }
+
+  .footer-copy {
+    max-width: none;
   }
 }

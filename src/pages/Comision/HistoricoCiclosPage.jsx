@@ -64,15 +64,15 @@ const HistoricoCiclosPage = () => {
   }, [loadCiclos]);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, minHeight: "80vh" }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 }, minHeight: "80vh" }}>
       <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
           {feedback.message}
         </Alert>
       </Snackbar>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} gap={2} flexWrap="wrap">
-        <Box display="flex" alignItems="center" gap={2}>
+      <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} mb={3} gap={2} flexWrap="wrap">
+        <Box display="flex" alignItems={{ xs: "flex-start", sm: "center" }} gap={2} flexWrap="wrap">
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/admin/votaciones/${unidadIdNumerico}`)}>
             Volver
           </Button>
@@ -114,6 +114,7 @@ const HistoricoCiclosPage = () => {
                   <Button
                     startIcon={<VisibilityIcon />}
                     onClick={() => navigate(`/admin/votaciones/${unidadIdNumerico}/historico/${ciclo.id}`)}
+                    sx={{ width: { xs: "100%", sm: "auto" } }}
                   >
                     Ver
                   </Button>

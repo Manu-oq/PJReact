@@ -20,9 +20,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { EmptyState, PageErrorState, PageLoader } from "../../components/feedback/PageState";
+import { ResponsiveTableSection } from "../../components/ResponsiveTableSection";
 import { getApiErrorMessage } from "../../lib/apiClient";
 import {
   descargarZipInformesHistoricos,
@@ -66,6 +69,8 @@ const HistoricoPostulantesPage = () => {
   const cicloIdNumerico = Number.parseInt(cicloId, 10);
   const unidadIdValido = Number.isInteger(unidadIdNumerico) && unidadIdNumerico > 0;
   const cicloIdValido = Number.isInteger(cicloIdNumerico) && cicloIdNumerico > 0;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [ciclo, setCiclo] = useState(null);
   const [postulantes, setPostulantes] = useState([]);
@@ -176,15 +181,15 @@ const HistoricoPostulantesPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4, minHeight: "80vh" }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 }, minHeight: "80vh" }}>
       <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
           {feedback.message}
         </Alert>
       </Snackbar>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} gap={2} flexWrap="wrap">
-        <Box display="flex" alignItems="center" gap={2}>
+      <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} mb={3} gap={2} flexWrap="wrap">
+        <Box display="flex" alignItems={{ xs: "flex-start", sm: "center" }} gap={2} flexWrap="wrap">
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/admin/votaciones/${unidadIdNumerico}/historico`)}>
             Volver
           </Button>
@@ -239,72 +244,74 @@ const HistoricoPostulantesPage = () => {
       {!loading && !pageError && sortedPostulantes.length === 0 ? <EmptyState message="No hay postulaciones históricas en este ciclo." /> : null}
 
       {!loading && !pageError && sortedPostulantes.length > 0 ? (
-        <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#081f34" }}>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    sx={{ color: "white", "&.Mui-checked": { color: "white" } }}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < sortedPostulantes.length}
-                    checked={sortedPostulantes.length > 0 && selectedIds.length === sortedPostulantes.length}
-                    onChange={handleSelectAllClick}
-                  />
-                </TableCell>
-                <TableCell sx={{ color: "white" }}>Rol</TableCell>
-                <TableCell sx={{ color: "white" }}>Nombre</TableCell>
-                <TableCell sx={{ color: "white" }}>RUN</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Estado</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Votos</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>Sí</TableCell>
-                <TableCell align="center" sx={{ color: "white" }}>No</TableCell>
-                <TableCell sx={{ color: "white" }}>Jueces que votaron</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedPostulantes.map((postulante) => (
-                <TableRow key={postulante.id} hover selected={isSelected(postulante.id)}>
+        <ResponsiveTableSection minWidth={1040}>
+          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+            <Table size={isMobile ? "small" : "medium"}>
+              <TableHead sx={{ backgroundColor: "#081f34" }}>
+                <TableRow>
                   <TableCell padding="checkbox">
-                    <Checkbox checked={isSelected(postulante.id)} onChange={(event) => handleClickCheckbox(event, postulante.id)} />
-                  </TableCell>
-                  <TableCell>{postulante.rol}</TableCell>
-                  <TableCell>{postulante.nombre_completo}</TableCell>
-                  <TableCell>{postulante.run}</TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      label={(postulante.total_votos || 0) >= TOTAL_JUECES_COMISION ? "COMPLETADO" : "PENDIENTE"}
-                      color={(postulante.total_votos || 0) >= TOTAL_JUECES_COMISION ? "success" : "warning"}
-                      size="small"
+                    <Checkbox
+                      sx={{ color: "white", "&.Mui-checked": { color: "white" } }}
+                      indeterminate={selectedIds.length > 0 && selectedIds.length < sortedPostulantes.length}
+                      checked={sortedPostulantes.length > 0 && selectedIds.length === sortedPostulantes.length}
+                      onChange={handleSelectAllClick}
                     />
                   </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title={`${postulante.total_votos || 0} de ${TOTAL_JUECES_COMISION} votos`}>
-                      <Box>
-                        <Typography variant="body2" fontWeight="bold">{postulante.total_votos || 0}</Typography>
-                        <LinearProgress variant="determinate" value={((postulante.total_votos || 0) / TOTAL_JUECES_COMISION) * 100} sx={{ mt: 1, height: 6, borderRadius: 5 }} />
-                      </Box>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography color={postulante.votos_si >= MAYORIA_NECESARIA_COMISION ? "success.main" : "inherit"} fontWeight="bold">
-                      {postulante.votos_si || 0}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography color={postulante.votos_no >= MAYORIA_NECESARIA_COMISION ? "error.main" : "inherit"} fontWeight="bold">
-                      {postulante.votos_no || 0}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {Array.isArray(postulante.jueces_votaron) && postulante.jueces_votaron.length > 0
-                      ? postulante.jueces_votaron.map(formatJuezVotacion).filter(Boolean).join(", ")
-                      : "Sin jueces registrados"}
-                  </TableCell>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>Rol</TableCell>
+                  <TableCell sx={{ color: "white", minWidth: 220 }}>Nombre</TableCell>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}>RUN</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>Estado</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>Votos</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>Sí</TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}>No</TableCell>
+                  <TableCell sx={{ color: "white", minWidth: 280 }}>Jueces que votaron</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {sortedPostulantes.map((postulante) => (
+                  <TableRow key={postulante.id} hover selected={isSelected(postulante.id)}>
+                    <TableCell padding="checkbox">
+                      <Checkbox checked={isSelected(postulante.id)} onChange={(event) => handleClickCheckbox(event, postulante.id)} />
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{postulante.rol}</TableCell>
+                    <TableCell>{postulante.nombre_completo}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>{postulante.run}</TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={(postulante.total_votos || 0) >= TOTAL_JUECES_COMISION ? "COMPLETADO" : "PENDIENTE"}
+                        color={(postulante.total_votos || 0) >= TOTAL_JUECES_COMISION ? "success" : "warning"}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Tooltip title={`${postulante.total_votos || 0} de ${TOTAL_JUECES_COMISION} votos`}>
+                        <Box sx={{ minWidth: 90 }}>
+                          <Typography variant="body2" fontWeight="bold">{postulante.total_votos || 0}</Typography>
+                          <LinearProgress variant="determinate" value={((postulante.total_votos || 0) / TOTAL_JUECES_COMISION) * 100} sx={{ mt: 1, height: 6, borderRadius: 5 }} />
+                        </Box>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography color={postulante.votos_si >= MAYORIA_NECESARIA_COMISION ? "success.main" : "inherit"} fontWeight="bold">
+                        {postulante.votos_si || 0}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography color={postulante.votos_no >= MAYORIA_NECESARIA_COMISION ? "error.main" : "inherit"} fontWeight="bold">
+                        {postulante.votos_no || 0}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {Array.isArray(postulante.jueces_votaron) && postulante.jueces_votaron.length > 0
+                        ? postulante.jueces_votaron.map(formatJuezVotacion).filter(Boolean).join(", ")
+                        : "Sin jueces registrados"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </ResponsiveTableSection>
       ) : null}
     </Container>
   );

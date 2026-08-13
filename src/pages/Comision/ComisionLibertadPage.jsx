@@ -86,7 +86,7 @@ const ComisionLibertadPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4, minHeight: "80vh" }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 }, minHeight: "80vh" }}>
       <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
           {feedback.message}
@@ -97,7 +97,7 @@ const ComisionLibertadPage = () => {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "stretch", md: "center" },
           mb: 4,
           gap: 2,
           flexWrap: "wrap",
@@ -113,7 +113,7 @@ const ComisionLibertadPage = () => {
           </Typography>
         </Box>
 
-        <Box>
+        <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
           <input type="file" accept=".xlsx, .xls" hidden ref={fileInputRef} onChange={handleFileUpload} />
           <Button
             variant="contained"
@@ -121,6 +121,7 @@ const ComisionLibertadPage = () => {
             startIcon={<UploadFileIcon />}
             onClick={() => setOpenExcelModal(true)}
             disabled={uploading || loading}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {uploading ? "Cargando..." : "Cargar Postulantes (Excel)"}
           </Button>
@@ -185,7 +186,7 @@ const ComisionLibertadPage = () => {
         <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, backgroundColor: "#f5f5f5" }}>
           <InfoIcon color="primary" /> Instrucciones de Carga Masiva
         </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
+        <DialogContent sx={{ mt: 2, px: { xs: 2, sm: 3 } }}>
           <Typography variant="body1" gutterBottom>
             El sistema validará cada fila del archivo. Aquellas que no cumplan con el formato o tengan unidades desconocidas <strong>serán descartadas</strong>.
           </Typography>
@@ -204,9 +205,9 @@ const ComisionLibertadPage = () => {
             Las filas con la columna &quot;Unidad&quot; vacía o mal escrita no se cargarán.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenExcelModal(false)} color="inherit">Cancelar</Button>
-          <Button onClick={handleConfirmExcelModal} variant="contained" color="primary" startIcon={<UploadFileIcon />}>
+        <DialogActions sx={{ p: 2, flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+          <Button onClick={() => setOpenExcelModal(false)} color="inherit" sx={{ width: { xs: "100%", sm: "auto" } }}>Cancelar</Button>
+          <Button onClick={handleConfirmExcelModal} variant="contained" color="primary" startIcon={<UploadFileIcon />} sx={{ width: { xs: "100%", sm: "auto" } }}>
             Seleccionar Archivo
           </Button>
         </DialogActions>

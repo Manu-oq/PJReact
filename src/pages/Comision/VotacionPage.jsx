@@ -30,6 +30,8 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
 
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
@@ -45,6 +47,7 @@ import Select from "react-select";
 
 import { getPostulantes, getFundamentos, getUnidades, emitirVoto, deletePostulantes } from "../../Services/LibertadCondicionalService";
 import { EmptyState, PageErrorState, PageLoader } from "../../components/feedback/PageState";
+import { ResponsiveTableSection } from "../../components/ResponsiveTableSection";
 import { getApiErrorMessage } from "../../lib/apiClient";
 import { useComisionAccess } from "../../features/comision/hooks/useComisionAccess";
 import { buildFundamentoOptions, sortPostulantes } from "../../features/comision/utils/comisionSelectors.jsx";
@@ -59,6 +62,8 @@ const VotacionPage = () => {
   const unidadIdNumerico = Number.parseInt(unidadId, 10);
   const unidadIdValido = Number.isInteger(unidadIdNumerico) && unidadIdNumerico > 0;
   const { puedeVotar, mostrarAdmin } = useComisionAccess();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [unidadNombre, setUnidadNombre] = useState("");
   const [postulantes, setPostulantes] = useState([]);
@@ -222,7 +227,7 @@ const VotacionPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4, minHeight: "80vh" }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 4 }, mb: { xs: 3, md: 4 }, minHeight: "80vh" }}>
       <Snackbar open={Boolean(feedback.message)} autoHideDuration={4000} onClose={closeFeedback} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={closeFeedback} severity={feedback.type} sx={{ width: "100%" }}>
           {feedback.message}
@@ -259,7 +264,7 @@ const VotacionPage = () => {
             startIcon={<DeleteIcon />}
             onClick={handleDeleteSelected}
             disabled={deleting}
-            sx={{ minWidth: 220, height: 55 }}
+            sx={{ minWidth: { xs: "100%", sm: 220 }, width: { xs: "100%", sm: "auto" }, height: 55 }}
           >
             {deleting ? "Eliminando..." : `Eliminar (${selectedIds.length})`}
           </Button>
@@ -271,93 +276,103 @@ const VotacionPage = () => {
       {!loading && !pageError && sortedPostulantes.length === 0 ? <EmptyState message="No hay postulantes para esta unidad." /> : null}
 
       {!loading && !pageError && sortedPostulantes.length > 0 ? (
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: "#081f34" }}>
-              <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    sx={{ color: "white", "&.Mui-checked": { color: "white" } }}
-                    indeterminate={selectedIds.length > 0 && selectedIds.length < sortedPostulantes.length}
-                    checked={sortedPostulantes.length > 0 && selectedIds.length === sortedPostulantes.length}
-                    onChange={handleSelectAllClick}
-                  />
-                </TableCell>
-                <TableCell sx={{ color: "white" }}><strong>Rol</strong></TableCell>
-                <TableCell sx={{ color: "white" }}><strong>Nombre Postulante</strong></TableCell>
-                <TableCell align="center" sx={{ color: "white" }}><strong>Mi Voto</strong></TableCell>
-                <TableCell align="right" sx={{ color: "white" }}><strong>Acción</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedPostulantes.map((postulante) => {
-                const isItemSelected = isSelected(postulante.id);
-                return (
-                  <TableRow key={postulante.id} hover selected={isItemSelected}>
-                    <TableCell padding="checkbox">
-                      <Checkbox checked={isItemSelected} onChange={(event) => handleClickCheckbox(event, postulante.id)} />
-                    </TableCell>
-                    <TableCell>{postulante.rol}</TableCell>
-                    <TableCell>{postulante.nombre_completo}</TableCell>
-                    <TableCell align="center">
-                      {puedeVotar ? (
-                        <Chip
-                          label={postulante.mi_voto_realizado ? "VOTADO" : "PENDIENTE"}
-                          color={postulante.mi_voto_realizado ? "success" : "warning"}
-                          variant={postulante.mi_voto_realizado ? "filled" : "outlined"}
-                          size="small"
-                        />
-                      ) : (
-                        <Typography variant="caption" color="textSecondary">No disponible</Typography>
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      {puedeVotar ? (
-                        <Tooltip title={postulante.mi_voto_realizado ? "Editar mi voto" : "Emitir voto"}>
-                          <IconButton color={postulante.mi_voto_realizado ? "success" : "primary"} onClick={() => handleOpenVote(postulante)} sx={{ border: "1px solid #eee" }}>
-                            {postulante.mi_voto_realizado ? <EditIcon /> : <HowToVoteIcon />}
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        <Tooltip title="Usted no tiene permisos para votar"><span><IconButton disabled><HowToVoteIcon /></IconButton></span></Tooltip>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <ResponsiveTableSection minWidth={720}>
+          <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+            <Table size={isMobile ? "small" : "medium"}>
+              <TableHead sx={{ backgroundColor: "#081f34" }}>
+                <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      sx={{ color: "white", "&.Mui-checked": { color: "white" } }}
+                      indeterminate={selectedIds.length > 0 && selectedIds.length < sortedPostulantes.length}
+                      checked={sortedPostulantes.length > 0 && selectedIds.length === sortedPostulantes.length}
+                      onChange={handleSelectAllClick}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ color: "white", whiteSpace: "nowrap" }}><strong>Rol</strong></TableCell>
+                  <TableCell sx={{ color: "white", minWidth: 220 }}><strong>Nombre Postulante</strong></TableCell>
+                  <TableCell align="center" sx={{ color: "white", whiteSpace: "nowrap" }}><strong>Mi Voto</strong></TableCell>
+                  <TableCell align="right" sx={{ color: "white", whiteSpace: "nowrap" }}><strong>Acción</strong></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedPostulantes.map((postulante) => {
+                  const isItemSelected = isSelected(postulante.id);
+                  return (
+                    <TableRow key={postulante.id} hover selected={isItemSelected}>
+                      <TableCell padding="checkbox">
+                        <Checkbox checked={isItemSelected} onChange={(event) => handleClickCheckbox(event, postulante.id)} />
+                      </TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{postulante.rol}</TableCell>
+                      <TableCell>{postulante.nombre_completo}</TableCell>
+                      <TableCell align="center">
+                        {puedeVotar ? (
+                          <Chip
+                            label={postulante.mi_voto_realizado ? "VOTADO" : "PENDIENTE"}
+                            color={postulante.mi_voto_realizado ? "success" : "warning"}
+                            variant={postulante.mi_voto_realizado ? "filled" : "outlined"}
+                            size="small"
+                          />
+                        ) : (
+                          <Typography variant="caption" color="textSecondary">No disponible</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="right">
+                        {puedeVotar ? (
+                          <Tooltip title={postulante.mi_voto_realizado ? "Editar mi voto" : "Emitir voto"}>
+                            <IconButton color={postulante.mi_voto_realizado ? "success" : "primary"} onClick={() => handleOpenVote(postulante)} sx={{ border: "1px solid #eee" }}>
+                              {postulante.mi_voto_realizado ? <EditIcon /> : <HowToVoteIcon />}
+                            </IconButton>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title="Usted no tiene permisos para votar"><span><IconButton disabled><HowToVoteIcon /></IconButton></span></Tooltip>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </ResponsiveTableSection>
       ) : null}
 
-      <Dialog open={openModal} onClose={handleCloseModal} maxWidth="lg" fullWidth TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 3, minHeight: "60vh" } }}>
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        maxWidth="lg"
+        fullWidth
+        fullScreen={isMobile}
+        TransitionComponent={Transition}
+        PaperProps={{ sx: { borderRadius: { xs: 0, sm: 3 }, minHeight: { xs: "100dvh", sm: "60vh" } } }}
+      >
         <AppBar position="static" elevation={0} sx={{ borderBottom: "1px solid #ddd", backgroundColor: "#081f34" }}>
           <Toolbar>
             <IconButton edge="start" onClick={handleCloseModal} sx={{ color: "#FFFFFF" }}><CloseIcon /></IconButton>
-            <Typography sx={{ ml: 2, flex: 1, color: "#FFFFFF" }} variant="h6">
+            <Typography sx={{ ml: 2, flex: 1, color: "#FFFFFF", pr: 1 }} variant="h6">
               {selectedPostulante?.nombre_completo}
               <Chip label={selectedPostulante?.rol} size="small" sx={{ ml: 1, color: "#FFFFFF", borderColor: "white" }} variant="outlined" />
             </Typography>
           </Toolbar>
         </AppBar>
-        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", backgroundColor: "#f9f9f9" }}>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", backgroundColor: "#f9f9f9", overflowY: "auto" }}>
           {!votoSeleccionado ? (
-            <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", p: 5 }}>
-              <Typography variant="h5" color="textSecondary" mb={4}>¿Cuál es su decisión?</Typography>
+            <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", p: { xs: 3, md: 5 } }}>
+              <Typography variant="h5" color="textSecondary" mb={4} textAlign="center">¿Cuál es su decisión?</Typography>
               <Grid container spacing={4} justifyContent="center">
                 <Grid item xs={12} sm={5}>
                   <Card elevation={3} sx={{ border: "2px solid transparent", "&:hover": { transform: "scale(1.05)", borderColor: "#2e7d32" } }}>
-                    <CardActionArea onClick={() => { setVotoSeleccionado("si"); setFundamentosSeleccionados(fundamentosAprobacion); }} sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#e8f5e9" }}>
-                      <CheckCircleIcon sx={{ fontSize: 80, color: "#2e7d32", mb: 2 }} />
-                      <Typography variant="h4" color="#2e7d32" fontWeight="bold">CONCEDER</Typography>
+                    <CardActionArea onClick={() => { setVotoSeleccionado("si"); setFundamentosSeleccionados(fundamentosAprobacion); }} sx={{ p: { xs: 3, md: 4 }, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#e8f5e9" }}>
+                      <CheckCircleIcon sx={{ fontSize: { xs: 64, md: 80 }, color: "#2e7d32", mb: 2 }} />
+                      <Typography variant="h4" color="#2e7d32" fontWeight="bold" textAlign="center">CONCEDER</Typography>
                     </CardActionArea>
                   </Card>
                 </Grid>
                 <Grid item xs={12} sm={5}>
                   <Card elevation={3} sx={{ border: "2px solid transparent", "&:hover": { transform: "scale(1.05)", borderColor: "#c62828" } }}>
-                    <CardActionArea onClick={() => { setVotoSeleccionado("no"); setFundamentosSeleccionados([]); }} sx={{ p: 4, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#ffebee" }}>
-                      <CancelIcon sx={{ fontSize: 80, color: "#c62828", mb: 2 }} />
-                      <Typography variant="h4" color="#c62828" fontWeight="bold">DENEGAR</Typography>
+                    <CardActionArea onClick={() => { setVotoSeleccionado("no"); setFundamentosSeleccionados([]); }} sx={{ p: { xs: 3, md: 4 }, display: "flex", flexDirection: "column", alignItems: "center", bgcolor: "#ffebee" }}>
+                      <CancelIcon sx={{ fontSize: { xs: 64, md: 80 }, color: "#c62828", mb: 2 }} />
+                      <Typography variant="h4" color="#c62828" fontWeight="bold" textAlign="center">DENEGAR</Typography>
                     </CardActionArea>
                   </Card>
                 </Grid>
@@ -366,12 +381,12 @@ const VotacionPage = () => {
           ) : null}
 
           {votoSeleccionado ? (
-            <Box sx={{ p: 4, flex: 1, bgcolor: "white" }}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Box sx={{ p: { xs: 2.5, md: 4 }, flex: 1, bgcolor: "white" }}>
+              <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", sm: "center" }} flexDirection={{ xs: "column", sm: "row" }} gap={2} mb={3}>
                 <Typography variant="h5" fontWeight="bold" sx={{ color: votoSeleccionado === "si" ? "#2e7d32" : "#c62828" }}>
                   {votoSeleccionado === "si" ? "FUNDAMENTOS PARA CONCEDER" : "FUNDAMENTOS PARA DENEGAR"}
                 </Typography>
-                <Button onClick={() => { setVotoSeleccionado(null); setFundamentosSeleccionados([]); }} variant="outlined" size="small">Cambiar Decisión</Button>
+                <Button onClick={() => { setVotoSeleccionado(null); setFundamentosSeleccionados([]); }} variant="outlined" size="small" sx={{ width: { xs: "100%", sm: "auto" } }}>Cambiar Decisión</Button>
               </Box>
               <Divider sx={{ mb: 3 }} />
               {votoSeleccionado === "no" ? (
@@ -394,8 +409,8 @@ const VotacionPage = () => {
           ) : null}
         </DialogContent>
         {votoSeleccionado ? (
-          <DialogActions sx={{ p: 2, bgcolor: "#f5f5f5" }}>
-            <Button onClick={handleCloseModal} color="inherit" size="large">Cancelar</Button>
+          <DialogActions sx={{ p: 2, bgcolor: "#f5f5f5", flexDirection: { xs: "column-reverse", sm: "row" }, gap: 1 }}>
+            <Button onClick={handleCloseModal} color="inherit" size="large" sx={{ width: { xs: "100%", sm: "auto" } }}>Cancelar</Button>
             <Button
               onClick={handleSubmitVote}
               variant="contained"
@@ -403,6 +418,7 @@ const VotacionPage = () => {
               size="large"
               disabled={submittingVote || fundamentosSeleccionados.length === 0}
               startIcon={<SaveIcon />}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
             >
               {submittingVote ? "Guardando..." : "Confirmar Voto"}
             </Button>

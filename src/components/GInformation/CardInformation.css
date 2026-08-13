@@ -2,6 +2,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.96rem;
+  min-width: 540px;
 }
 
 .table-information th,
@@ -30,10 +31,23 @@
 
 .table-information td {
   color: #334e68;
+  vertical-align: top;
 }
 
 .mail-hightlight {
   font-weight: 700;
   color: #113f6a;
   word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .table-information {
+    font-size: 0.9rem;
+    min-width: 500px;
+  }
+
+  .table-information th,
+  .table-information td {
+    padding: 12px 14px;
+  }
 }

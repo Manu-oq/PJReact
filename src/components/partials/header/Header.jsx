@@ -107,7 +107,7 @@ export const Header = ({ navLinks }) => {
           onClose={toggleDrawer}
           PaperProps={{
             sx: {
-              width: 310,
+              width: { xs: "min(88vw, 320px)", sm: 310 },
               p: 2,
               background: "linear-gradient(180deg, #081f34 0%, #113f6a 100%)",
               color: "#eef4fb",
@@ -131,6 +131,10 @@ export const Header = ({ navLinks }) => {
                   border: "1px solid rgba(255,255,255,0.1)",
                   width: "100%",
                   justifyContent: "flex-start",
+                  "& .MuiChip-label": {
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
                 }}
               />
             ) : null}

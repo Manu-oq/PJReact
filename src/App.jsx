@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense, useMemo } from "react";
 import { Header } from "./components/partials/header/Header";
 import { Footer } from "./components/partials/footer/Footer";
@@ -9,6 +9,7 @@ import { PageLoader } from "./components/feedback/PageState";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 import { useCertificacionesAccess } from "./features/certificaciones/hooks/useCertificacionesAccess";
 import {
+  CERTIFICACIONES_CASES_ROUTE,
   CERTIFICACIONES_NAV_LINK,
   CERTIFICACIONES_PERMISSION,
   CERTIFICACIONES_ROUTE,
@@ -27,6 +28,7 @@ const AdminVotacionPage = lazy(() => import("./pages/Comision/AdminVotacionPage"
 const HistoricoCiclosPage = lazy(() => import("./pages/Comision/HistoricoCiclosPage"));
 const HistoricoPostulantesPage = lazy(() => import("./pages/Comision/HistoricoPostulantesPage"));
 const CertificacionesPage = lazy(() => import("./pages/CertificacionesPage"));
+const CertificacionesCasesPage = lazy(() => import("./pages/CertificacionesCasesPage"));
 
 const AppContent = () => {
   const { puedeVerModulo } = useComisionAccess();
@@ -59,6 +61,14 @@ const AppContent = () => {
             <Route path="/Apertura-juramentos" element={<OpeningOfFilesAndOathOfLawyers />} />
             <Route path="/preguntas-frecuentes" element={<FrequentQuestions />} />
             <Route path="/general-information" element={<GeneralInformation />} />
+            <Route
+              path={CERTIFICACIONES_CASES_ROUTE}
+              element={
+                <ProtectedRoute allowedPermissions={[CERTIFICACIONES_PERMISSION]}>
+                  <CertificacionesCasesPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path={CERTIFICACIONES_ROUTE}
               element={
@@ -108,6 +118,7 @@ const AppContent = () => {
               }
             />
             <Route path="/logout" element={<Logout />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </div>

@@ -84,7 +84,7 @@ export const CertificationFieldsEditor = ({
 
         <Grid container spacing={2}>
           {editableFields.map((field) => (
-            <Grid item xs={12} md={6} key={field.key}>
+            <Grid item xs={12} lg={6} key={field.key}>
               <TextField
                 fullWidth
                 label={field.label}
@@ -97,8 +97,8 @@ export const CertificationFieldsEditor = ({
           ))}
         </Grid>
 
-        <Box display="flex" justifyContent="flex-end">
-          <Button type="submit" variant="outlined" startIcon={<SaveIcon />} disabled={saving}>
+        <Box display="flex" justifyContent={{ xs: "stretch", sm: "flex-end" }}>
+          <Button type="submit" variant="outlined" startIcon={<SaveIcon />} disabled={saving} sx={{ width: { xs: "100%", sm: "auto" } }}>
             {saving ? "Guardando..." : "Guardar correcciones"}
           </Button>
         </Box>

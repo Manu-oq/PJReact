@@ -19,7 +19,7 @@ export const Footer = () => {
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 5 } }}>
         <Grid container spacing={{ xs: 3, md: 4 }} alignItems="flex-start">
           <Grid xs={12} md={4}>
-            <Stack spacing={2.5}>
+            <Stack spacing={2.5} sx={{ textAlign: { xs: "center", md: "left" }, alignItems: { xs: "center", md: "stretch" } }}>
               <Link href="https://www.pjud.cl/" target="_blank" rel="noopener" sx={{ display: "inline-flex", width: "fit-content" }}>
                 <img
                   src={pjud}
@@ -36,7 +36,7 @@ export const Footer = () => {
                   Plataforma institucional orientada a información pública, gestión interna y soporte a procesos de libertad condicional.
                 </Typography>
               </Box>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} justifyContent={{ xs: "center", md: "flex-start" }} flexWrap="wrap" useFlexGap>
                 <Icons title="Facebook" url="https://www.facebook.com/PoderJudicialdeChile" />
                 <Icons title="Twitter" url="https://twitter.com/pjudicialchile" />
                 <Icons title="Instagram" url="https://www.instagram.com/pjudicialchile/" />
@@ -46,7 +46,7 @@ export const Footer = () => {
           </Grid>
 
           <Grid xs={12} sm={6} md={4}>
-            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2 }}>
+            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2, textAlign: { xs: "center", sm: "left" } }}>
               Enlaces de interés
             </Typography>
 
@@ -60,7 +60,7 @@ export const Footer = () => {
           </Grid>
 
           <Grid xs={12} sm={6} md={4}>
-            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2 }}>
+            <Typography variant="h6" className="titles" sx={{ fontWeight: "bold", mb: 2, textAlign: { xs: "center", sm: "left" } }}>
               Contacto
             </Typography>
 

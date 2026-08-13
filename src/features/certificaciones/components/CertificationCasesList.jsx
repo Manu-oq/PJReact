@@ -5,7 +5,6 @@ import {
   CardActionArea,
   CardContent,
   Chip,
-  LinearProgress,
   Stack,
   Typography,
 } from "@mui/material";
@@ -27,28 +26,17 @@ const getStatusColor = (status) => {
   }
 };
 
-const getRelevantDate = (certificationCase) =>
-  certificationCase.generated_at ||
-  certificationCase.validated_at ||
-  certificationCase.processed_at ||
-  null;
-
-const formatDate = (value) => {
-  if (!value) {
-    return "Sin fecha";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("es-CL", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date);
+const statusLabels = {
+  created: "Creado",
+  uploaded: "Cargado",
+  extracted: "Extraído",
+  validated: "Validado",
+  generated: "Generado",
+  failed: "Fallido",
+  needs_review: "Requiere revisión",
 };
+
+const getStatusLabel = (status) => statusLabels[status] || "Sin estado";
 
 export const CertificationCasesList = ({
   cases,
@@ -74,7 +62,6 @@ export const CertificationCasesList = ({
     >
       <Stack spacing={2}>
         {cases.map((certificationCase) => {
-          const relevantDate = getRelevantDate(certificationCase);
           const isSelected = certificationCase.id === selectedCaseId;
 
           return (
@@ -89,7 +76,7 @@ export const CertificationCasesList = ({
             >
               <CardActionArea onClick={() => onSelectCase(certificationCase.id)}>
                 <CardContent sx={{ p: 2.25 }}>
-                  <Stack spacing={1.5}>
+                  <Stack spacing={1}>
                     <Box display="flex" justifyContent="space-between" gap={1.5} flexWrap="wrap">
                       <Stack direction="row" spacing={1} alignItems="center">
                         <AssignmentOutlinedIcon color="primary" fontSize="small" />
@@ -98,7 +85,7 @@ export const CertificationCasesList = ({
                         </Typography>
                       </Stack>
                       <Chip
-                        label={certificationCase.status || "sin estado"}
+                        label={getStatusLabel(certificationCase.status)}
                         color={getStatusColor(certificationCase.status)}
                         size="small"
                         variant={isSelected ? "filled" : "outlined"}
@@ -108,31 +95,6 @@ export const CertificationCasesList = ({
                     <Typography variant="body2" color="text.secondary">
                       {certificationCase.type?.name || "Tipo no disponible"}
                     </Typography>
-
-                    <Typography variant="body1">
-                      {certificationCase.title || "Sin título"}
-                    </Typography>
-
-                    <Box>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.75}>
-                        <Typography variant="caption" color="text.secondary">
-                          Progreso
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {certificationCase.progress ?? 0}%
-                        </Typography>
-                      </Box>
-                      <LinearProgress variant="determinate" value={Number(certificationCase.progress) || 0} />
-                    </Box>
-
-                    <Box display="flex" justifyContent="space-between" gap={1} flexWrap="wrap">
-                      <Typography variant="caption" color="text.secondary">
-                        {relevantDate ? "Última actualización" : "Estado temporal"}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(relevantDate)}
-                      </Typography>
-                    </Box>
                   </Stack>
                 </CardContent>
               </CardActionArea>

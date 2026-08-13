@@ -223,13 +223,21 @@ describe("CertificacionesService", () => {
       type: "application/pdf",
     });
 
-    mockApiClient.get.mockResolvedValue({ data: blob });
+    mockApiClient.get.mockResolvedValue({
+      data: blob,
+      headers: {
+        "content-disposition": 'attachment; filename="resumen_C-123.docx"',
+      },
+    });
 
     const result = await downloadCertificationDocument(21);
 
     expect(mockApiClient.get).toHaveBeenCalledWith("versioned:/certificaciones/casos/21/documento", {
       responseType: "blob",
     });
-    expect(result).toBe(blob);
+    expect(result).toEqual({
+      blob,
+      fileName: 'attachment; filename="resumen_C-123.docx"',
+    });
   });
 });

@@ -57,13 +57,75 @@ const triggerBlobDownload = (blob, fileName) => {
   window.URL.revokeObjectURL(url);
 };
 
-const buildDocumentName = (certificationCase) => {
+const sanitizeFilenamePart = (value) => {
+  if (!value || typeof value !== "string") {
+    return "";
+  }
+
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9._-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^[._-]+|[._-]+$/g, "");
+
+  return normalized;
+};
+
+const decodeDownloadFilename = (headerValue) => {
+  if (!headerValue || typeof headerValue !== "string") {
+    return "";
+  }
+
+  const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]).trim();
+    } catch {
+      return utf8Match[1].trim();
+    }
+  }
+
+  const plainMatch = headerValue.match(/filename="?([^";]+)"?/i);
+  return plainMatch?.[1]?.trim() ?? "";
+};
+
+const buildDocumentName = (certificationCase, headerValue) => {
+  const headerFileName = decodeDownloadFilename(headerValue);
+  if (headerFileName) {
+    return headerFileName;
+  }
+
+  const titleFileName = sanitizeFilenamePart(certificationCase?.title ?? "");
+  if (titleFileName) {
+    return `${titleFileName}.docx`;
+  }
+
+  const typeCode = certificationCase?.type?.code ?? "";
+  const prefix =
+    {
+      certificacion_queja: "certificado_queja",
+      certificacion_tc: "certificado_tc",
+      resumen: "resumen",
+    }[typeCode] ?? "certificacion";
+
+  const roleFileName = sanitizeFilenamePart(
+    certificationCase?.resolved_fields?.rol_corte ?? certificationCase?.resolved_fields?.rol_origen ?? ""
+  );
+  if (roleFileName) {
+    return `${prefix}_${roleFileName}.docx`;
+  }
+
   if (!certificationCase?.id) {
     return "certificacion.docx";
   }
 
   return `certificacion-${certificationCase.id}.docx`;
 };
+
+const pendingValidationStatuses = new Set(["created", "uploaded"]);
+
+const isCasePendingValidation = (status) => pendingValidationStatuses.has(status);
 
 export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
   const hasLoadedRef = useRef(false);
@@ -200,6 +262,25 @@ export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
     loadInitialData();
   }, [loadInitialData]);
 
+  useEffect(() => {
+    if (!selectedCaseId || !selectedCase || !isCasePendingValidation(selectedCase.status)) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        await loadCaseDetail(selectedCaseId, { silent: true });
+        await loadCases({ preferredCaseId: selectedCaseId, silent: true });
+      } catch {
+        // Mantiene el último estado visible hasta el siguiente reintento automático.
+      }
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadCaseDetail, loadCases, selectedCase, selectedCaseId]);
+
   const handleSelectCase = useCallback(
     async (caseId) => {
       setSelectedCaseId(caseId);
@@ -271,6 +352,19 @@ export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
     }
 
     try {
+      if (isCasePendingValidation(selectedCase?.status)) {
+        const detail = await loadCaseDetail(selectedCaseId, { silent: true });
+        await loadCases({ preferredCaseId: selectedCaseId, silent: true });
+
+        if (isCasePendingValidation(detail?.caseData?.status)) {
+          setFeedback({
+            type: "error",
+            message: "El caso todavía se está procesando. Espere unos segundos antes de validar.",
+          });
+          return;
+        }
+      }
+
       setValidatingCase(true);
       const validatedCase = await validateCertificationCase(selectedCaseId);
       setSelectedCase(validatedCase);
@@ -306,7 +400,7 @@ export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
     } finally {
       setValidatingCase(false);
     }
-  }, [loadCaseDetail, loadCases, selectedCaseId]);
+  }, [loadCaseDetail, loadCases, selectedCase?.status, selectedCaseId]);
 
   const handleGenerateDocument = useCallback(async () => {
     if (!selectedCaseId) {
@@ -339,8 +433,8 @@ export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
 
     try {
       setDownloadingDocument(true);
-      const blob = await downloadCertificationDocument(selectedCaseId);
-      triggerBlobDownload(blob, buildDocumentName(selectedCase));
+      const { blob, fileName } = await downloadCertificationDocument(selectedCaseId);
+      triggerBlobDownload(blob, buildDocumentName(selectedCase, fileName));
       setFeedback({ type: "success", message: "Documento descargado correctamente." });
     } catch (error) {
       setFeedback({
@@ -369,6 +463,7 @@ export const useCertificaciones = ({ autoSelectFirstCase = true } = {}) => {
       validatingCase,
       generatingDocument,
       downloadingDocument,
+      casePendingValidation: isCasePendingValidation(selectedCase?.status),
       pageError,
       feedback,
       closeFeedback,

@@ -132,7 +132,7 @@ describe("CertificacionesCasesPage", () => {
     document.createElement = originalCreateElement;
   });
 
-  it("carga los casos recientes y selecciona el primero automáticamente", async () => {
+  it("carga los casos recientes como histórico y abre el detalle solo al seleccionar un caso", async () => {
     serviceMocks.getCertificationTypes.mockResolvedValue([buildType()]);
     serviceMocks.getCertificationCases.mockResolvedValue([buildCase()]);
     serviceMocks.getCertificationCase.mockResolvedValue(buildCase());
@@ -142,7 +142,14 @@ describe("CertificacionesCasesPage", () => {
 
     expect(await screen.findByRole("heading", { level: 4, name: /Casos recientes/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Caso #1/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Advertencia de prueba/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resumen/i)).toBeInTheDocument();
+    expect(screen.getByText(/Requiere revisión/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Falta RIT/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Línea 1/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByText(/Caso #1/i)[0]);
+
+    expect(await screen.findByRole("heading", { level: 5, name: /Detalle del caso/i })).toBeInTheDocument();
     expect(screen.getByText(/Falta RIT/i)).toBeInTheDocument();
     expect(screen.getByText(/Fecha inválida/i)).toBeInTheDocument();
     expect(screen.getByText(/Línea 1/i)).toBeInTheDocument();
@@ -189,11 +196,18 @@ describe("CertificacionesCasesPage", () => {
       .mockResolvedValueOnce(generatedExtraction);
     serviceMocks.validateCertificationCase.mockResolvedValue(validatedCase);
     serviceMocks.generateCertificationDocument.mockResolvedValue(generatedCase);
-    serviceMocks.downloadCertificationDocument.mockResolvedValue(documentBlob);
+    serviceMocks.downloadCertificationDocument.mockResolvedValue({
+      blob: documentBlob,
+      fileName: 'attachment; filename="resumen_C-123.docx"',
+    });
 
     renderPage();
 
     expect((await screen.findAllByText(/Caso #1/i)).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getAllByText(/Caso #1/i)[0]);
+
+    expect(await screen.findByRole("heading", { level: 5, name: /Detalle del caso/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /^Validar$/i }));
 
@@ -221,6 +235,12 @@ describe("CertificacionesCasesPage", () => {
       expect(serviceMocks.downloadCertificationDocument).toHaveBeenCalledWith(1);
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(documentBlob);
     });
+
+    const downloadAnchor = document.createElement.mock.results
+      .map((result) => result.value)
+      .find((element) => element?.tagName === "A");
+
+    expect(downloadAnchor?.download).toBe("resumen_C-123.docx");
 
     expect(await screen.findByText(/Documento descargado correctamente/i)).toBeInTheDocument();
   });

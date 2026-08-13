@@ -210,6 +210,10 @@ describe("CertificacionesPage", () => {
     expect(await screen.findByText(/Caso creado correctamente/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 5, name: /Revisión y corrección/i })).toBeInTheDocument();
     expect(screen.getByText(/Preview nuevo/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Validar$/i })).toBeDisabled();
+    expect(
+      screen.getByText(/el caso todavía se está procesando\. la validación se habilitará cuando termine la extracción inicial/i)
+    ).toBeInTheDocument();
   });
 
   it("bloquea archivos sobre 100 MB antes de intentar subirlos", async () => {

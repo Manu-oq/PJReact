@@ -115,5 +115,8 @@ export const downloadCertificationDocument = async (caseId) => {
     }
   );
 
-  return response.data;
+  return {
+    blob: response.data,
+    fileName: response.headers?.["content-disposition"] ?? "",
+  };
 };

@@ -1,7 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { Box, Button, Grid, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
+
+const uppercaseTokens = new Set(["rit", "ruc", "rol", "run"]);
+
+const formatFieldKey = (key) =>
+  String(key || "")
+    .split("_")
+    .filter(Boolean)
+    .map((token) => {
+      const normalizedToken = token.trim();
+
+      if (!normalizedToken) {
+        return "";
+      }
+
+      if (uppercaseTokens.has(normalizedToken.toLowerCase())) {
+        return normalizedToken.toUpperCase();
+      }
+
+      return normalizedToken.charAt(0).toUpperCase() + normalizedToken.slice(1).toLowerCase();
+    })
+    .join(" ");
 
 const buildEditableFields = ({ selectedCase, selectedExtraction }) => {
   const fieldLabels = {
@@ -19,7 +40,7 @@ const buildEditableFields = ({ selectedCase, selectedExtraction }) => {
 
   return Array.from(fieldKeys).map((key) => ({
     key,
-    label: fieldLabels[key] || key,
+    label: fieldLabels[key] || formatFieldKey(key),
     value:
       selectedExtraction?.manual_overrides?.[key] ??
       selectedExtraction?.resolved_fields?.[key] ??
@@ -33,6 +54,7 @@ export const CertificationFieldsEditor = ({
   selectedCase = null,
   selectedExtraction = null,
   saving = false,
+  showHeader = true,
   onSave,
 }) => {
   const editableFields = useMemo(
@@ -73,18 +95,32 @@ export const CertificationFieldsEditor = ({
   return (
     <Box component="form" onSubmit={handleSubmit}>
       <Stack spacing={2}>
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            Corrección básica de campos
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Ajuste manualmente los valores detectados y guarde los overrides mínimos del caso.
-          </Typography>
-        </Box>
+        {showHeader ? (
+          <Box>
+            <Typography variant="h6" fontWeight="bold">
+              Corrección básica de campos
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Ajuste manualmente los valores detectados y guarde los overrides mínimos del caso.
+            </Typography>
+          </Box>
+        ) : null}
 
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr)",
+              xl: "repeat(2, minmax(0, 1fr))",
+            },
+            gap: { xs: 1.5, md: 2 },
+            width: "100%",
+            px: { xs: 0.5, sm: 0 },
+            alignItems: "start",
+          }}
+        >
           {editableFields.map((field) => (
-            <Grid item xs={12} lg={6} key={field.key}>
+            <Box key={field.key} sx={{ minWidth: 0 }}>
               <TextField
                 fullWidth
                 label={field.label}
@@ -92,10 +128,17 @@ export const CertificationFieldsEditor = ({
                 onChange={handleChange(field.key)}
                 color={field.missing ? "warning" : "primary"}
                 helperText={field.missing ? "Campo actualmente faltante." : " "}
+                size="small"
+                sx={{
+                  width: "100%",
+                  "& .MuiFormHelperText-root": {
+                    mx: 0,
+                  },
+                }}
               />
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         <Box display="flex" justifyContent={{ xs: "stretch", sm: "flex-end" }}>
           <Button type="submit" variant="outlined" startIcon={<SaveIcon />} disabled={saving} sx={{ width: { xs: "100%", sm: "auto" } }}>
@@ -111,5 +154,6 @@ CertificationFieldsEditor.propTypes = {
   selectedCase: PropTypes.object,
   selectedExtraction: PropTypes.object,
   saving: PropTypes.bool,
+  showHeader: PropTypes.bool,
   onSave: PropTypes.func.isRequired,
 };

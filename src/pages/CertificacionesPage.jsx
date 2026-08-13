@@ -31,6 +31,7 @@ const CertificacionesPage = () => {
     loadingInitial,
     loadingDetail,
     creatingCase,
+    casePendingValidation,
     savingOverrides,
     validatingCase,
     generatingDocument,
@@ -93,14 +94,26 @@ const CertificacionesPage = () => {
             Certificaciones y resúmenes
           </Typography>
 
-          <Button
-            variant="outlined"
-            startIcon={<VisibilityIcon />}
-            onClick={() => navigate(CERTIFICACIONES_CASES_ROUTE)}
-            sx={{ width: { xs: "100%", sm: "auto" } }}
-          >
-            Casos recientes
-          </Button>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ width: { xs: "100%", sm: "auto" } }}>
+            {currentStep === 1 ? (
+              <Button
+                variant="contained"
+                onClick={() => setCurrentStep(0)}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
+                Crear otro caso
+              </Button>
+            ) : null}
+
+            <Button
+              variant="outlined"
+              startIcon={<VisibilityIcon />}
+              onClick={() => navigate(CERTIFICACIONES_CASES_ROUTE)}
+              sx={{ width: { xs: "100%", sm: "auto" } }}
+            >
+              Casos recientes
+            </Button>
+          </Stack>
         </Box>
 
         <Stepper activeStep={currentStep} alternativeLabel sx={{ px: { xs: 0, md: 2 } }}>
@@ -120,24 +133,15 @@ const CertificacionesPage = () => {
           />
         ) : (
           <Stack spacing={2.5}>
-            <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} gap={2} flexWrap="wrap">
-              <Typography variant="h5" color="primary.main" fontWeight="bold">
-                Revisión y corrección
-              </Typography>
-
-              <Button
-                variant="text"
-                onClick={() => setCurrentStep(0)}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                Crear otro caso
-              </Button>
-            </Box>
+            <Typography variant="h5" color="primary.main" fontWeight="bold">
+              Revisión y corrección
+            </Typography>
 
             <CertificationDetailPanel
               selectedCase={selectedCase}
               selectedExtraction={selectedExtraction}
               loading={loadingDetail}
+              casePendingValidation={casePendingValidation}
               validating={validatingCase}
               generating={generatingDocument}
               downloading={downloadingDocument}

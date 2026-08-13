@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Container, Grid, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Container, Snackbar, Stack, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { CertificationCasesList } from "../features/certificaciones/components/CertificationCasesList";
@@ -17,6 +17,7 @@ const CertificacionesCasesPage = () => {
     loadingInitial,
     loadingCases,
     loadingDetail,
+    casePendingValidation,
     savingOverrides,
     validatingCase,
     generatingDocument,
@@ -30,7 +31,7 @@ const CertificacionesCasesPage = () => {
     validateCase,
     generateDocument,
     downloadDocument,
-  } = useCertificaciones();
+  } = useCertificaciones({ autoSelectFirstCase: false });
 
   if (loadingInitial) {
     return (
@@ -77,21 +78,41 @@ const CertificacionesCasesPage = () => {
           </Button>
         </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={4}>
+        {!selectedCaseId ? (
+          <Stack spacing={2}>
+            <Typography variant="body2" color="text.secondary">
+              Seleccione un caso del histórico para revisar su detalle y continuar con las acciones disponibles.
+            </Typography>
+
             <CertificationCasesList
               cases={cases}
               selectedCaseId={selectedCaseId}
               loading={loadingCases}
               onSelectCase={selectCase}
             />
-          </Grid>
+          </Stack>
+        ) : (
+          <Stack spacing={2.5}>
+            <Box display="flex" justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} gap={2} flexWrap="wrap">
+              <Typography variant="h5" color="primary.main" fontWeight="bold">
+                Detalle del caso
+              </Typography>
 
-          <Grid item xs={12} lg={8}>
+              <Button
+                variant="outlined"
+                startIcon={<ArrowBackIcon />}
+                onClick={() => selectCase(null)}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
+                Volver a la lista
+              </Button>
+            </Box>
+
             <CertificationDetailPanel
               selectedCase={selectedCase}
               selectedExtraction={selectedExtraction}
               loading={loadingDetail}
+              casePendingValidation={casePendingValidation}
               validating={validatingCase}
               generating={generatingDocument}
               downloading={downloadingDocument}
@@ -101,8 +122,8 @@ const CertificacionesCasesPage = () => {
               onDownload={downloadDocument}
               onSaveOverrides={saveOverrides}
             />
-          </Grid>
-        </Grid>
+          </Stack>
+        )}
       </Stack>
     </Container>
   );

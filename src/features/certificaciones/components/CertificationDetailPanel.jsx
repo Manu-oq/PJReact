@@ -7,7 +7,6 @@ import {
   CardContent,
   Chip,
   Divider,
-  Grid,
   List,
   ListItem,
   ListItemText,
@@ -23,6 +22,32 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { EmptyState, PageLoader } from "../../../components/feedback/PageState";
 import { CertificationFieldsEditor } from "./CertificationFieldsEditor";
 
+const documentTypeLabels = {
+  primera_instancia: "Primera instancia",
+  segunda_instancia: "Segunda instancia",
+};
+
+const uppercaseTokens = new Set(["rit", "ruc", "rol", "run"]);
+
+const formatFieldLabel = (value) =>
+  String(value || "")
+    .split("_")
+    .filter(Boolean)
+    .map((token) => {
+      const normalizedToken = token.trim();
+
+      if (!normalizedToken) {
+        return "";
+      }
+
+      if (uppercaseTokens.has(normalizedToken.toLowerCase())) {
+        return normalizedToken.toUpperCase();
+      }
+
+      return normalizedToken.charAt(0).toUpperCase() + normalizedToken.slice(1).toLowerCase();
+    })
+    .join(" ");
+
 const renderRecordEntries = (record = {}, emptyText = "Sin información registrada.") => {
   const entries = Object.entries(record || {});
 
@@ -35,7 +60,7 @@ const renderRecordEntries = (record = {}, emptyText = "Sin información registra
       {entries.map(([key, value]) => (
         <ListItem key={key} disableGutters sx={{ py: 0.5 }}>
           <ListItemText
-            primary={key}
+            primary={formatFieldLabel(key)}
             secondary={
               value && typeof value === "object"
                 ? JSON.stringify(value, null, 2)
@@ -55,28 +80,23 @@ const buildFieldLabelMap = (selectedCase, selectedExtraction) => ({
   ...(selectedExtraction?.field_labels || {}),
 });
 
-const getVisibleResolvedFields = (selectedCase, selectedExtraction) => {
-  const fieldLabels = buildFieldLabelMap(selectedCase, selectedExtraction);
-  const source = selectedExtraction?.resolved_fields || selectedCase?.resolved_fields || {};
-
-  return Object.fromEntries(
-    Object.entries(source).map(([key, value]) => [fieldLabels[key] || key, value])
-  );
-};
-
 const getVisibleMissingFields = (selectedCase, selectedExtraction) => {
   const fieldLabels = buildFieldLabelMap(selectedCase, selectedExtraction);
   const source = selectedExtraction?.missing_fields || selectedCase?.missing_fields || {};
 
   return Object.fromEntries(
-    Object.entries(source).map(([key, value]) => [fieldLabels[key] || key, value])
+    Object.entries(source).map(([key, value]) => [fieldLabels[key] || formatFieldLabel(key), value])
   );
 };
+
+const getDocumentTypeLabel = (documentType) =>
+  documentTypeLabels[documentType] || documentType || "Documento";
 
 export const CertificationDetailPanel = ({
   selectedCase = null,
   selectedExtraction = null,
   loading = false,
+  casePendingValidation = false,
   validating = false,
   generating = false,
   downloading = false,
@@ -94,16 +114,14 @@ export const CertificationDetailPanel = ({
     return <EmptyState message="Seleccione un caso para ver su detalle, validaciones y preview." minHeight={260} />;
   }
 
-  const visibleResolvedFields = getVisibleResolvedFields(selectedCase, selectedExtraction);
   const visibleMissingFields = getVisibleMissingFields(selectedCase, selectedExtraction);
   const files = selectedExtraction?.files?.length ? selectedExtraction.files : selectedCase.files;
-  const warnings = selectedExtraction?.warnings?.length ? selectedExtraction.warnings : selectedCase.warnings;
   const validationErrors =
     Object.keys(selectedCase.validation_errors || {}).length > 0
       ? selectedCase.validation_errors
       : selectedExtraction?.validation_errors || {};
   const preview = selectedExtraction?.document_preview || selectedCase.document_preview || "";
-  const actionsDisabled = loading || savingOverrides;
+  const actionsDisabled = loading || savingOverrides || casePendingValidation;
 
   return (
     <Stack spacing={2}>
@@ -113,17 +131,15 @@ export const CertificationDetailPanel = ({
             <Box display="flex" justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} gap={2} flexWrap="wrap">
               <Box>
                 <Typography variant="h5" color="primary.main" fontWeight="bold">
-                  Caso #{selectedCase.id}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
                   {selectedCase.type?.name || "Tipo no disponible"}
                 </Typography>
               </Box>
 
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                <Chip label={selectedCase.status || "sin estado"} color="primary" variant="outlined" />
-                <Chip label={selectedCase.has_document ? "Documento disponible" : "Sin documento"} color={selectedCase.has_document ? "success" : "default"} size="small" />
-              </Stack>
+              <Chip
+                label={selectedCase.has_document ? "Documento disponible" : "Sin documento"}
+                color={selectedCase.has_document ? "success" : "default"}
+                size="small"
+              />
             </Box>
 
             <Box display="flex" gap={1.5} flexWrap="wrap">
@@ -159,59 +175,62 @@ export const CertificationDetailPanel = ({
 
             {!selectedCase.has_document ? (
               <Typography variant="caption" color="text.secondary">
-                La descarga se habilita cuando el backend haya generado el documento final del caso.
+                La descarga se habilita cuando se haya generado el documento final del caso.
               </Typography>
             ) : null}
 
-            <Grid container spacing={2}>
-              <Grid item xs={12} xl={6}>
-                <Card variant="outlined" sx={{ height: "100%" }}>
-                  <CardContent>
-                    <Stack spacing={1.5}>
-                      <Typography variant="h6" fontWeight="bold">
-                        Resumen del caso
-                      </Typography>
-                      <Typography variant="body2"><strong>Título:</strong> {selectedCase.title || "Sin título"}</Typography>
-                      <Typography variant="body2"><strong>Progreso:</strong> {selectedCase.progress ?? 0}%</Typography>
-                      <Typography variant="body2"><strong>Procesado:</strong> {selectedCase.processed_at || "No disponible"}</Typography>
-                      <Typography variant="body2"><strong>Validado:</strong> {selectedCase.validated_at || "No disponible"}</Typography>
-                      <Typography variant="body2"><strong>Generado:</strong> {selectedCase.generated_at || "No disponible"}</Typography>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
+            {casePendingValidation ? (
+              <Typography variant="caption" color="text.secondary">
+                El caso todavía se está procesando. La validación se habilitará cuando termine la extracción inicial.
+              </Typography>
+            ) : null}
 
-              <Grid item xs={12} xl={6}>
-                <Card variant="outlined" sx={{ height: "100%" }}>
-                  <CardContent>
-                    <Stack spacing={1.5}>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <DescriptionIcon color="primary" fontSize="small" />
-                        <Typography variant="h6" fontWeight="bold">
-                          Archivos asociados
-                        </Typography>
-                      </Box>
-                      {files.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">
-                          No hay archivos asociados.
-                        </Typography>
-                      ) : (
-                        <List dense disablePadding>
-                          {files.map((file) => (
-                            <ListItem key={`${file.id}-${file.original_name}`} disableGutters sx={{ py: 0.5 }}>
-                              <ListItemText
-                                primary={file.original_name || `Archivo ${file.id}`}
-                                secondary={`${file.document_type} · ${file.extraction_status}${file.extraction_method ? ` · ${file.extraction_method}` : ""}`}
-                              />
-                            </ListItem>
-                          ))}
-                        </List>
-                      )}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+            <Card variant="outlined">
+              <CardContent>
+                <Stack spacing={2}>
+                  <Typography variant="h6" fontWeight="bold">
+                    Resumen del caso
+                  </Typography>
+
+                  <Stack spacing={1}>
+                    <Typography variant="body2">
+                      <strong>Título:</strong> {selectedCase.title || "Sin título"}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Progreso:</strong> {selectedCase.progress ?? 0}%
+                    </Typography>
+                  </Stack>
+
+                  <Box>
+                    <Box display="flex" alignItems="center" gap={1} sx={{ mb: 0.75 }}>
+                      <DescriptionIcon color="primary" fontSize="small" />
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        Archivos asociados
+                      </Typography>
+                    </Box>
+
+                    {files.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary">
+                        No hay archivos asociados.
+                      </Typography>
+                    ) : (
+                      <List dense disablePadding>
+                        {files.map((file) => (
+                          <ListItem key={`${file.id}-${file.original_name}`} disableGutters sx={{ py: 0.35 }}>
+                            <ListItemText
+                              primary={file.original_name || `Archivo ${file.id}`}
+                              secondary={getDocumentTypeLabel(file.document_type)}
+                              primaryTypographyProps={{ variant: "body2" }}
+                              secondaryTypographyProps={{ variant: "caption" }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    )}
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
 
             {Object.keys(visibleMissingFields).length > 0 ? (
               <Alert severity="warning" icon={<WarningAmberIcon fontSize="inherit" />}>
@@ -219,21 +238,6 @@ export const CertificationDetailPanel = ({
                   Campos faltantes
                 </Typography>
                 {renderRecordEntries(visibleMissingFields)}
-              </Alert>
-            ) : null}
-
-            {warnings.length > 0 ? (
-              <Alert severity="warning">
-                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 0.5 }}>
-                  Warnings del backend
-                </Typography>
-                <List dense disablePadding>
-                  {warnings.map((warning) => (
-                    <ListItem key={warning} disableGutters sx={{ py: 0.25 }}>
-                      <ListItemText primary={warning} />
-                    </ListItem>
-                  ))}
-                </List>
               </Alert>
             ) : null}
 
@@ -248,38 +252,28 @@ export const CertificationDetailPanel = ({
 
             <Divider />
 
-            <Grid container spacing={2}>
-              <Grid item xs={12} xl={6}>
-                <Card variant="outlined" sx={{ height: "100%" }}>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
-                      Campos resueltos
+            <Card variant="outlined">
+              <CardContent>
+                <Stack spacing={1.5}>
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold">
+                      Campos del caso
                     </Typography>
-                    {renderRecordEntries(visibleResolvedFields)}
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} xl={6}>
-                <Card variant="outlined" sx={{ height: "100%" }}>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
-                      Evidencia / extracción
+                    <Typography variant="body2" color="text.secondary">
+                      Revise y edite los valores detectados antes de guardar las correcciones.
                     </Typography>
-                    {renderRecordEntries(selectedExtraction?.evidence || {}, "Sin evidencia detallada disponible.")}
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
+                  </Box>
 
-            <Divider />
-
-            <CertificationFieldsEditor
-              selectedCase={selectedCase}
-              selectedExtraction={selectedExtraction}
-              saving={savingOverrides}
-              onSave={onSaveOverrides}
-            />
+                  <CertificationFieldsEditor
+                    selectedCase={selectedCase}
+                    selectedExtraction={selectedExtraction}
+                    saving={savingOverrides}
+                    showHeader={false}
+                    onSave={onSaveOverrides}
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
 
             <Divider />
 
@@ -324,6 +318,7 @@ CertificationDetailPanel.propTypes = {
   selectedCase: PropTypes.object,
   selectedExtraction: PropTypes.object,
   loading: PropTypes.bool,
+  casePendingValidation: PropTypes.bool,
   validating: PropTypes.bool,
   generating: PropTypes.bool,
   downloading: PropTypes.bool,

@@ -123,7 +123,9 @@ const buildDocumentName = (certificationCase, headerValue) => {
   return `certificacion-${certificationCase.id}.docx`;
 };
 
-const pendingValidationStatuses = new Set(["created", "uploaded"]);
+// A queued case can remain extracting while the server reads large e-books.
+// Keep polling until extraction reaches a terminal reviewable state.
+const pendingValidationStatuses = new Set(["created", "uploaded", "extracting"]);
 
 const isCasePendingValidation = (status) => pendingValidationStatuses.has(status);
 

@@ -158,6 +158,38 @@ describe("CertificacionesCasesPage", () => {
     expect(serviceMocks.getCertificationExtraction).toHaveBeenCalledWith(1);
   });
 
+  it("mantiene la validación bloqueada mientras el backend extrae un e-book", async () => {
+    const extractingCase = buildCase({
+      status: "extracting",
+      progress: 10,
+      validation_errors: {},
+      missing_fields: {},
+      warnings: [],
+    });
+
+    serviceMocks.getCertificationTypes.mockResolvedValue([buildType()]);
+    serviceMocks.getCertificationCases.mockResolvedValue([extractingCase]);
+    serviceMocks.getCertificationCase.mockResolvedValue(extractingCase);
+    serviceMocks.getCertificationExtraction.mockResolvedValue(
+      buildExtraction({
+        status: "extracting",
+        validation_errors: {},
+        missing_fields: {},
+        warnings: [],
+      })
+    );
+
+    renderPage();
+
+    await screen.findByRole("heading", { level: 4, name: /Casos recientes/i });
+    fireEvent.click(screen.getAllByText(/Caso #1/i)[0]);
+
+    expect(await screen.findByRole("button", { name: /^Validar$/i })).toBeDisabled();
+    expect(
+      screen.getByText(/el caso todavía se está procesando\. la validación se habilitará cuando termine la extracción inicial/i)
+    ).toBeInTheDocument();
+  });
+
   it("permite validar, generar y descargar el documento del caso seleccionado", async () => {
     const initialCase = buildCase({ validation_errors: {}, warnings: [], missing_fields: {} });
     const validatedCase = {

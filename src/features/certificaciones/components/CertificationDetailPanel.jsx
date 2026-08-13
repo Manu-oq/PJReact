@@ -6,7 +6,7 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider,
+  LinearProgress,
   List,
   ListItem,
   ListItemText,
@@ -121,88 +121,140 @@ export const CertificationDetailPanel = ({
       ? selectedCase.validation_errors
       : selectedExtraction?.validation_errors || {};
   const preview = selectedExtraction?.document_preview || selectedCase.document_preview || "";
+  const progressValue = Number(selectedCase.progress) || 0;
   const actionsDisabled = loading || savingOverrides || casePendingValidation;
 
   return (
     <Stack spacing={2}>
       <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
         <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
-          <Stack spacing={2.5}>
-            <Box display="flex" justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} gap={2} flexWrap="wrap">
-              <Box>
-                <Typography variant="h5" color="primary.main" fontWeight="bold">
-                  {selectedCase.type?.name || "Tipo no disponible"}
-                </Typography>
-              </Box>
-
-              <Chip
-                label={selectedCase.has_document ? "Documento disponible" : "Sin documento"}
-                color={selectedCase.has_document ? "success" : "default"}
-                size="small"
-              />
-            </Box>
-
-            <Box display="flex" gap={1.5} flexWrap="wrap">
-              <Button
-                variant="contained"
-                startIcon={<RuleIcon />}
-                onClick={onValidate}
-                disabled={actionsDisabled || validating || generating || downloading}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                {validating ? "Validando..." : "Validar"}
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<TaskAltIcon />}
-                onClick={onGenerate}
-                disabled={actionsDisabled || generating || validating || downloading}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                {generating ? "Generando..." : "Generar Word"}
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<DownloadIcon />}
-                onClick={onDownload}
-                disabled={actionsDisabled || !selectedCase.has_document || downloading}
-                sx={{ width: { xs: "100%", sm: "auto" } }}
-              >
-                {downloading ? "Descargando..." : "Descargar Word"}
-              </Button>
-            </Box>
-
-            {!selectedCase.has_document ? (
-              <Typography variant="caption" color="text.secondary">
-                La descarga se habilita cuando se haya generado el documento final del caso.
-              </Typography>
-            ) : null}
-
-            {casePendingValidation ? (
-              <Typography variant="caption" color="text.secondary">
-                El caso todavía se está procesando. La validación se habilitará cuando termine la extracción inicial.
-              </Typography>
-            ) : null}
-
-            <Card variant="outlined">
-              <CardContent>
-                <Stack spacing={2}>
-                  <Typography variant="h6" fontWeight="bold">
-                    Resumen del caso
-                  </Typography>
-
-                  <Stack spacing={1}>
-                    <Typography variant="body2">
-                      <strong>Título:</strong> {selectedCase.title || "Sin título"}
+          <Stack spacing={3}>
+            <Box
+              sx={{
+                p: { xs: 2, md: 2.5 },
+                borderRadius: 3,
+                border: "1px solid rgba(8,31,52,0.08)",
+                background:
+                  "linear-gradient(135deg, rgba(8,31,52,0.05) 0%, rgba(8,31,52,0.01) 100%)",
+              }}
+            >
+              <Stack spacing={2}>
+                <Box display="flex" justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} gap={2} flexWrap="wrap">
+                  <Stack spacing={0.5}>
+                    <Typography variant="overline" color="text.secondary" sx={{ letterSpacing: "0.08em" }}>
+                      Detalle del documento
                     </Typography>
-                    <Typography variant="body2">
-                      <strong>Progreso:</strong> {selectedCase.progress ?? 0}%
+                    <Typography variant="h5" color="primary.main" fontWeight="bold">
+                      {selectedCase.type?.name || "Tipo no disponible"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Revise los datos del caso antes de validar, generar o descargar el documento final.
                     </Typography>
                   </Stack>
 
+                  <Chip
+                    label={selectedCase.has_document ? "Documento disponible" : "Sin documento"}
+                    color={selectedCase.has_document ? "success" : "default"}
+                    size="small"
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "repeat(3, minmax(0, 1fr))" },
+                    gap: 1.25,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    startIcon={<RuleIcon />}
+                    onClick={onValidate}
+                    disabled={actionsDisabled || validating || generating || downloading}
+                    sx={{ minHeight: 44 }}
+                  >
+                    {validating ? "Validando..." : "Validar"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<TaskAltIcon />}
+                    onClick={onGenerate}
+                    disabled={actionsDisabled || generating || validating || downloading}
+                    sx={{ minHeight: 44 }}
+                  >
+                    {generating ? "Generando..." : "Generar Word"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<DownloadIcon />}
+                    onClick={onDownload}
+                    disabled={actionsDisabled || !selectedCase.has_document || downloading}
+                    sx={{ minHeight: 44 }}
+                  >
+                    {downloading ? "Descargando..." : "Descargar Word"}
+                  </Button>
+                </Box>
+              </Stack>
+            </Box>
+
+            {!selectedCase.has_document || casePendingValidation ? (
+              <Stack spacing={1}>
+                {!selectedCase.has_document ? (
+                  <Typography variant="caption" color="text.secondary">
+                    La descarga se habilita cuando se haya generado el documento final del caso.
+                  </Typography>
+                ) : null}
+
+                {casePendingValidation ? (
+                  <Typography variant="caption" color="text.secondary">
+                    El caso todavía se está procesando. La validación se habilitará cuando termine la extracción inicial.
+                  </Typography>
+                ) : null}
+              </Stack>
+            ) : null}
+
+            <Card variant="outlined" sx={{ borderRadius: 3 }}>
+              <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+                <Stack spacing={2}>
+                  <Box display="flex" justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} gap={1.5} flexWrap="wrap">
+                    <Typography variant="h6" fontWeight="bold">
+                      Resumen del caso
+                    </Typography>
+
+                    <Chip
+                      label={`${progressValue}% completado`}
+                      color="primary"
+                      variant="outlined"
+                      size="small"
+                    />
+                  </Box>
+
+                  <Stack spacing={1.25}>
+                    <Typography variant="body2">
+                      <strong>Título:</strong> {selectedCase.title || "Sin título"}
+                    </Typography>
+
+                    <Box>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.75}>
+                        <Typography variant="caption" color="text.secondary">
+                          Progreso del caso
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {progressValue}%
+                        </Typography>
+                      </Box>
+
+                      <LinearProgress
+                        variant="determinate"
+                        value={progressValue}
+                        sx={{ height: 8, borderRadius: 999 }}
+                      />
+                    </Box>
+                  </Stack>
+
                   <Box>
-                    <Box display="flex" alignItems="center" gap={1} sx={{ mb: 0.75 }}>
+                    <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
                       <DescriptionIcon color="primary" fontSize="small" />
                       <Typography variant="subtitle1" fontWeight="bold">
                         Archivos asociados
@@ -216,11 +268,21 @@ export const CertificationDetailPanel = ({
                     ) : (
                       <List dense disablePadding>
                         {files.map((file) => (
-                          <ListItem key={`${file.id}-${file.original_name}`} disableGutters sx={{ py: 0.35 }}>
+                          <ListItem
+                            key={`${file.id}-${file.original_name}`}
+                            disableGutters
+                            sx={{
+                              py: 0.6,
+                              px: 1,
+                              borderRadius: 2,
+                              "&:not(:last-child)": { mb: 0.5 },
+                              backgroundColor: "rgba(8,31,52,0.025)",
+                            }}
+                          >
                             <ListItemText
                               primary={file.original_name || `Archivo ${file.id}`}
                               secondary={getDocumentTypeLabel(file.document_type)}
-                              primaryTypographyProps={{ variant: "body2" }}
+                              primaryTypographyProps={{ variant: "body2", fontWeight: 500 }}
                               secondaryTypographyProps={{ variant: "caption" }}
                             />
                           </ListItem>
@@ -233,7 +295,7 @@ export const CertificationDetailPanel = ({
             </Card>
 
             {Object.keys(visibleMissingFields).length > 0 ? (
-              <Alert severity="warning" icon={<WarningAmberIcon fontSize="inherit" />}>
+              <Alert severity="warning" icon={<WarningAmberIcon fontSize="inherit" />} sx={{ borderRadius: 2.5 }}>
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 0.5 }}>
                   Campos faltantes
                 </Typography>
@@ -242,7 +304,7 @@ export const CertificationDetailPanel = ({
             ) : null}
 
             {Object.keys(validationErrors).length > 0 ? (
-              <Alert severity="error">
+              <Alert severity="error" sx={{ borderRadius: 2.5 }}>
                 <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 0.5 }}>
                   Errores de validación
                 </Typography>
@@ -250,11 +312,9 @@ export const CertificationDetailPanel = ({
               </Alert>
             ) : null}
 
-            <Divider />
-
-            <Card variant="outlined">
-              <CardContent>
-                <Stack spacing={1.5}>
+            <Card variant="outlined" sx={{ borderRadius: 3 }}>
+              <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+                <Stack spacing={1.75}>
                   <Box>
                     <Typography variant="h6" fontWeight="bold">
                       Campos del caso
@@ -275,36 +335,41 @@ export const CertificationDetailPanel = ({
               </CardContent>
             </Card>
 
-            <Divider />
+            <Card variant="outlined" sx={{ borderRadius: 3 }}>
+              <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+                <Stack spacing={1.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <TextSnippetIcon color="primary" fontSize="small" />
+                    <Typography variant="h6" fontWeight="bold">
+                      Preview del documento
+                    </Typography>
+                  </Box>
 
-            <Card variant="outlined">
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1.5 }}>
-                  <TextSnippetIcon color="primary" fontSize="small" />
-                  <Typography variant="h6" fontWeight="bold">
-                    Preview del documento
+                  <Typography variant="body2" color="text.secondary">
+                    Vista previa del contenido que se usará para generar el documento final.
                   </Typography>
-                </Box>
-                <Box
-                  component="pre"
-                  sx={{
-                    m: 0,
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: "rgba(8,31,52,0.04)",
-                    border: "1px solid rgba(8,31,52,0.08)",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    fontFamily: '"Roboto Mono", monospace',
-                    fontSize: { xs: "0.82rem", md: "0.9rem" },
-                    lineHeight: 1.55,
-                    minHeight: 180,
-                    maxHeight: 460,
-                    overflow: "auto",
-                  }}
-                >
-                  {preview || "Todavía no hay preview disponible para este caso."}
-                </Box>
+
+                  <Box
+                    component="pre"
+                    sx={{
+                      m: 0,
+                      p: { xs: 1.5, md: 2 },
+                      borderRadius: 2.5,
+                      backgroundColor: "rgba(8,31,52,0.03)",
+                      border: "1px solid rgba(8,31,52,0.08)",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      fontFamily: '"Roboto Mono", monospace',
+                      fontSize: { xs: "0.8rem", md: "0.88rem" },
+                      lineHeight: 1.6,
+                      minHeight: 160,
+                      maxHeight: 320,
+                      overflow: "auto",
+                    }}
+                  >
+                    {preview || "Todavía no hay preview disponible para este caso."}
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Stack>
